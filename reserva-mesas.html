@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reserva de Mesas</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #f5f3ee;
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e0ddd6;
+    overflow: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e0ddd6;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+    background: #fff;
+  }
+
+  .header-title h1 {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+
+  .header-title .subtitle {
+    font-size: 13px;
+    color: #888;
+    margin-top: 2px;
+  }
+
+  .header-fields {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+
+  .field-group label {
+    display: block;
+    font-size: 11px;
+    color: #999;
+    margin-bottom: 4px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .field-group input,
+  .field-group select {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 6px 10px;
+    border: 1px solid #e0ddd6;
+    border-radius: 8px;
+    background: #faf9f7;
+    color: #1a1a1a;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .field-group input:focus,
+  .field-group select:focus { border-color: #999; background: #fff; }
+
+  .field-group input[type="date"] { width: 148px; }
+  .field-group select { width: 160px; }
+  .field-group input[type="text"] { width: 140px; }
+
+  /* TOOLBAR */
+  .toolbar {
+    padding: 10px 24px;
+    border-bottom: 1px solid #e0ddd6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #faf9f7;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .stats { font-size: 12px; color: #888; }
+  .stats span { color: #1a1a1a; font-weight: 500; }
+
+  .toolbar-actions { display: flex; gap: 8px; }
+
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid #e0ddd6;
+    background: #fff;
+    color: #1a1a1a;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .btn:hover { background: #f5f3ee; border-color: #ccc; }
+
+  .btn-print {
+    background: #1a1a1a;
+    color: #fff;
+    border-color: #1a1a1a;
+  }
+
+  .btn-print:hover { background: #333; }
+
+  .btn-danger { color: #c0392b; border-color: #f0d0ce; }
+  .btn-danger:hover { background: #fdf0ef; }
+
+  /* GRID */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 6px;
+    padding: 16px;
+    background: #fff;
+  }
+
+  .cell {
+    border: 1px solid #e0ddd6;
+    border-radius: 8px;
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.12s;
+    padding: 4px;
+    gap: 3px;
+    background: #fff;
+    position: relative;
+  }
+
+  .cell:hover { border-color: #aaa; background: #faf9f7; transform: scale(1.04); }
+
+  .cell.reserved {
+    background: #edf4fb;
+    border-color: #5b9fd4;
+  }
+
+  .cell-num {
+    font-size: 11px;
+    font-weight: 600;
+    color: #aaa;
+    font-family: 'DM Mono', monospace;
+    line-height: 1;
+  }
+
+  .cell.reserved .cell-num { color: #2c6fa8; }
+
+  .cell-name {
+    font-size: 7px;
+    color: #2c6fa8;
+    text-align: center;
+    word-break: break-word;
+    line-height: 1.2;
+    max-width: 100%;
+    overflow: hidden;
+    font-weight: 500;
+  }
+
+  .dots-row {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ccc;
+    flex-shrink: 0;
+  }
+
+  .cell.reserved .dot { background: #5b9fd4; }
+
+  /* LEGEND */
+  .legend {
+    padding: 10px 24px;
+    border-top: 1px solid #e0ddd6;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+    background: #faf9f7;
+  }
+
+  .leg { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #888; }
+
+  .leg-box {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    border: 1px solid;
+  }
+
+  .leg-free { background: #fff; border-color: #e0ddd6; }
+  .leg-res { background: #edf4fb; border-color: #5b9fd4; }
+
+  .leg-dots { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+  .leg-dots-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #888; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: #fff;
+    border: 1px solid #e0ddd6;
+    border-radius: 16px;
+    padding: 24px;
+    width: 300px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  }
+
+  .modal h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .modal .modal-sub { font-size: 12px; color: #999; margin-bottom: 16px; }
+
+  .modal label {
+    display: block;
+    font-size: 11px;
+    color: #999;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .modal input[type="text"] {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e0ddd6;
+    border-radius: 8px;
+    background: #faf9f7;
+    color: #1a1a1a;
+    outline: none;
+    margin-bottom: 14px;
+    transition: border-color 0.15s;
+  }
+
+  .modal input[type="text"]:focus { border-color: #999; background: #fff; }
+
+  .cap-toggle { display: flex; gap: 8px; margin-bottom: 16px; }
+
+  .cap-btn {
+    flex: 1;
+    padding: 10px 8px;
+    border: 1px solid #e0ddd6;
+    border-radius: 10px;
+    background: #faf9f7;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: #888;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.12s;
+  }
+
+  .cap-btn:hover { border-color: #aaa; }
+
+  .cap-btn.active {
+    border-color: #5b9fd4;
+    background: #edf4fb;
+    color: #2c6fa8;
+    font-weight: 500;
+  }
+
+  .cap-btn-dots { display: flex; gap: 3px; }
+  .cap-dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; }
+  .cap-btn.active .cap-dot { background: #5b9fd4; }
+
+  .modal-btns {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .modal-btns button {
+    flex: 1;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 9px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1px solid #e0ddd6;
+    background: #fff;
+    color: #1a1a1a;
+    transition: all 0.12s;
+  }
+
+  .modal-btns button:hover { background: #f5f3ee; }
+
+  .modal-btns .btn-reservar {
+    background: #1a1a1a;
+    color: #fff;
+    border-color: #1a1a1a;
+  }
+
+  .modal-btns .btn-reservar:hover { background: #333; }
+  .modal-btns .btn-cancelar { color: #c0392b; border-color: #f0d0ce; }
+  .modal-btns .btn-cancelar:hover { background: #fdf0ef; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: #1a1a1a;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 10px 20px;
+    border-radius: 100px;
+    z-index: 200;
+    opacity: 0;
+    transition: all 0.25s;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ===== PRINT ===== */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .container { border-radius: 0; border: none; box-shadow: none; max-width: 100%; }
+    .toolbar-actions, .modal-overlay, .toast { display: none !important; }
+    .header-fields input, .header-fields select { border: none; background: transparent; padding: 0; font-weight: 500; }
+    .toolbar { background: #fff; }
+    .legend { background: #fff; }
+    .cell { break-inside: avoid; cursor: default; }
+    .cell:hover { transform: none; }
+    .grid { gap: 4px; padding: 10px; }
+    .btn-print { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-title">
+      <h1>Reserva de Mesas</h1>
+      <div class="subtitle" id="subtitle-text">Sábado - Noite</div>
+    </div>
+    <div class="header-fields">
+      <div class="field-group">
+        <label>Data</label>
+        <input type="date" id="data-input" onchange="updateSubtitle()" />
+      </div>
+      <div class="field-group">
+        <label>Período</label>
+        <select id="periodo-select" onchange="updateSubtitle()">
+          <option>Sábado - Noite</option>
+          <option>Sexta - Noite</option>
+          <option>Domingo - Tarde</option>
+          <option>Outro</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Banda</label>
+        <input type="text" id="banda-input" placeholder="Nome da banda" onchange="updateSubtitle()" />
+      </div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="stats" id="stats">0 reservadas &nbsp;·&nbsp; 100 livres</div>
+    <div class="toolbar-actions">
+      <button class="btn btn-danger" onclick="clearAll()">Limpar tudo</button>
+      <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir</button>
+    </div>
+  </div>
+
+  <!-- GRID -->
+  <div class="grid" id="grid"></div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="leg"><div class="leg-box leg-free"></div>Livre</div>
+    <div class="leg"><div class="leg-box leg-res"></div>Reservado</div>
+    <div class="leg-dots" style="margin-left:auto;">
+      <div class="leg-dots-item">
+        <div class="dots-row"><div class="dot"></div><div class="dot"></div></div>
+        2 pessoas
+      </div>
+      <div class="leg-dots-item">
+        <div class="dots-row"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        4 pessoas
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h2 id="modal-title">Mesa 01</h2>
+    <div class="modal-sub" id="modal-sub"></div>
+    <label>Capacidade</label>
+    <div class="cap-toggle">
+      <div class="cap-btn active" id="cap-2" onclick="selectCap(2)">
+        <div class="cap-btn-dots"><div class="cap-dot"></div><div class="cap-dot"></div></div>
+        2 pessoas
+      </div>
+      <div class="cap-btn" id="cap-4" onclick="selectCap(4)">
+        <div class="cap-btn-dots"><div class="cap-dot"></div><div class="cap-dot"></div><div class="cap-dot"></div><div class="cap-dot"></div></div>
+        4 pessoas
+      </div>
+    </div>
+    <label>Nome do responsável</label>
+    <input type="text" id="modal-name" placeholder="Ex: João Silva" onkeydown="if(event.key==='Enter') saveReserva()" />
+    <label>Observação (opcional)</label>
+    <input type="text" id="modal-obs" placeholder="Ex: aniversário" onkeydown="if(event.key==='Enter') saveReserva()" />
+    <div class="modal-btns">
+      <button class="btn-reservar" onclick="saveReserva()">Reservar</button>
+      <button class="btn-cancelar" id="btn-cancel" onclick="cancelReserva()" style="display:none">Cancelar reserva</button>
+      <button onclick="closeModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const STORAGE_KEY = 'reserva_mesas_state';
+  let state = {};
+  let selected = null;
+  let selectedCap = 2;
+
+  // Default caps: alternating 2 and 4
+  const defaultCaps = {};
+  for (let i = 1; i <= 100; i++) {
+    defaultCaps[String(i).padStart(2,'0')] = i % 2 === 0 ? 4 : 2;
+  }
+
+  function load() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) state = JSON.parse(saved);
+    } catch(e) {}
+  }
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  }
+
+  function updateSubtitle() {
+    const periodo = document.getElementById('periodo-select').value;
+    const data = document.getElementById('data-input').value;
+    const banda = document.getElementById('banda-input').value;
+    let parts = [periodo];
+    if (data) {
+      const d = new Date(data + 'T12:00:00');
+      parts.unshift(d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' }));
+    }
+    if (banda) parts.push('· ' + banda);
+    document.getElementById('subtitle-text').textContent = parts.join(' — ');
+  }
+
+  function selectCap(cap) {
+    selectedCap = cap;
+    document.getElementById('cap-2').classList.toggle('active', cap === 2);
+    document.getElementById('cap-4').classList.toggle('active', cap === 4);
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+    for (let i = 1; i <= 100; i++) {
+      const n = String(i).padStart(2,'0');
+      const res = state[n];
+      const cap = res ? res.cap : defaultCaps[n];
+
+      const cell = document.createElement('div');
+      cell.className = 'cell' + (res ? ' reserved' : '');
+      cell.onclick = () => openModal(n);
+
+      const dotsRow = document.createElement('div');
+      dotsRow.className = 'dots-row';
+      for (let d = 0; d < cap; d++) {
+        const dot = document.createElement('div');
+        dot.className = 'dot';
+        dotsRow.appendChild(dot);
+      }
+      cell.appendChild(dotsRow);
+
+      const num = document.createElement('div');
+      num.className = 'cell-num';
+      num.textContent = n;
+      cell.appendChild(num);
+
+      if (res) {
+        const nm = document.createElement('div');
+        nm.className = 'cell-name';
+        nm.textContent = res.name;
+        cell.appendChild(nm);
+      }
+
+      grid.appendChild(cell);
+    }
+    updateStats();
+  }
+
+  function updateStats() {
+    const res = Object.keys(state).length;
+    const p2 = Object.values(state).filter(r => r.cap === 2).length;
+    const p4 = Object.values(state).filter(r => r.cap === 4).length;
+    let txt = `<span>${res}</span> reservadas`;
+    if (p2 || p4) txt += ` (${p2} de 2, ${p4} de 4)`;
+    txt += ` &nbsp;·&nbsp; <span>${100-res}</span> livres`;
+    document.getElementById('stats').innerHTML = txt;
+  }
+
+  function openModal(n) {
+    selected = n;
+    const res = state[n];
+    const cap = res ? res.cap : defaultCaps[n];
+    document.getElementById('modal-title').textContent = `Mesa ${n}`;
+    document.getElementById('modal-sub').textContent = res ? `Atualmente reservado por: ${res.name}` : 'Clique em Reservar para confirmar';
+    selectCap(cap);
+    document.getElementById('modal-name').value = res ? res.name : '';
+    document.getElementById('modal-obs').value = res ? (res.obs || '') : '';
+    document.getElementById('btn-cancel').style.display = res ? 'block' : 'none';
+    document.getElementById('modal-overlay').classList.add('open');
+    setTimeout(() => document.getElementById('modal-name').focus(), 80);
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('open');
+    selected = null;
+  }
+
+  function saveReserva() {
+    const name = document.getElementById('modal-name').value.trim();
+    const obs = document.getElementById('modal-obs').value.trim();
+    if (!name) { document.getElementById('modal-name').focus(); return; }
+    state[selected] = { name, obs, cap: selectedCap };
+    save();
+    closeModal();
+    renderGrid();
+    showToast(`Mesa ${selected} reservada — ${name}`);
+  }
+
+  function cancelReserva() {
+    const n = selected;
+    delete state[n];
+    save();
+    closeModal();
+    renderGrid();
+    showToast(`Reserva da mesa ${n} cancelada`);
+  }
+
+  function clearAll() {
+    if (confirm('Apagar todas as reservas?')) {
+      state = {};
+      save();
+      renderGrid();
+      showToast('Todas as reservas removidas');
+    }
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  document.getElementById('modal-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal-overlay')) closeModal();
+  });
+
+  // Init
+  document.getElementById('data-input').value = new Date().toISOString().slice(0,10);
+  load();
+  updateSubtitle();
+  renderGrid();
+</script>
+</body>
+</html>
