@@ -516,7 +516,10 @@ function showToast(msg) {
 }
 
 document.getElementById('overlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('overlay')) closeModal();
+  if (e.target === document.getElementById('overlay')) {
+    e.stopPropagation();
+    closeModal();
+  }
 });
 
 document.getElementById('inp-data').value = new Date().toISOString().slice(0,10);
