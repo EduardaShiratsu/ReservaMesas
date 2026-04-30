@@ -489,8 +489,8 @@ async function saveRes() {
   const obs  = document.getElementById('m-obs').value.trim();
   if (!name) { document.getElementById('m-name').focus(); return; }
   if (!window._fb) {
-    showToast('Conectando, tente novamente em 2 segundos...');
-    setTimeout(() => saveRes(), 2000);
+    showToast('Conectando...');
+    setTimeout(saveRes, 1000);
     return;
   }
   setSync('saving');
@@ -528,7 +528,15 @@ document.getElementById('overlay').addEventListener('click', e => {
 
 document.getElementById('inp-data').value = new Date().toISOString().slice(0,10);
 updateSub(); renderGrid();
-(function waitFb() { window._fb ? onCtxChange() : setTimeout(waitFb, 150); })();
+(function waitFb() {
+  if (window._fb) {
+    onCtxChange();
+    setSync('ok');
+  } else {
+    setSync('saving');
+    setTimeout(waitFb, 150);
+  }
+})();
 </script>
 </body>
 </html>
