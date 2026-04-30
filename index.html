@@ -31,21 +31,6 @@
 </script>
   // ▲▲▲ FIM DO CONFIG ▲▲▲
 
-  const app = initializeApp(firebaseConfig);
-  const db  = getDatabase(app);
-  let curRef = null, curCb = null;
-
-  window._fb = {
-    set:    (path, val) => set(ref(db, path), val),
-    remove: (path)      => remove(ref(db, path)),
-    listen: (path, cb)  => {
-      if (curRef && curCb) off(curRef, 'value', curCb);
-      curRef = ref(db, path);
-      curCb  = onValue(curRef, snap => cb(snap.val()));
-    }
-  };
-</script>
-
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono&display=swap');
 
