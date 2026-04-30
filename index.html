@@ -488,7 +488,11 @@ async function saveRes() {
   const name = document.getElementById('m-name').value.trim();
   const obs  = document.getElementById('m-obs').value.trim();
   if (!name) { document.getElementById('m-name').focus(); return; }
-  if (!window._fb) { showToast('Aguarde a conexão...'); return; }
+  if (!window._fb) {
+    showToast('Conectando, tente novamente em 2 segundos...');
+    setTimeout(() => saveRes(), 2000);
+    return;
+  }
   setSync('saving');
   await window._fb.set(`${fbKey()}/${selN}`, { name, obs, cap: CAPS[selN] });
   showToast(`Mesa ${selN} reservada — ${name}`);
