@@ -17,17 +17,17 @@
     messagingSenderId: "662638990559",
     appId: "1:662638990559:web:6fe500487520d1f4a8856a"
   });
-  const _db = firebase.database();
-  let curRef = null;
-  window._fb = {
-    set:    (path, val) => _db.ref(path).set(val),
-    remove: (path)      => _db.ref(path).remove(),
-    listen: (path, cb)  => {
-      if (curRef) curRef.off();
-      curRef = _db.ref(path);
-      curRef.on('value', snap => cb(snap.val()));
-    }
-  };
+   const _db = firebase.database();
+    const _refs = {};
+    window._fb = {
+      set:    (path, val) => _db.ref(path).set(val),
+      remove: (path)      => _db.ref(path).remove(),
+      listen: (path, cb)  => {
+        if (_refs[path]) _refs[path].off();
+        _refs[path] = _db.ref(path);
+        _refs[path].on('value', snap => cb(snap.val()));
+      }
+    };
 </script>
   // ▲▲▲ FIM DO CONFIG ▲▲▲
 
