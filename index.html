@@ -551,6 +551,27 @@ document.getElementById('inp-data').value = new Date().toISOString().slice(0,10)
 updateSub();
 renderGrid();
 onCtxChange();
+
+  function imprimirVazio() {
+  // 1. Guardamos os dados reais em uma gaveta (backup)
+  const backupReservas = { ...state };
+  
+  // 2. Avisamos o sistema para ignorar as reservas por um momento e renderizar
+  state = {}; 
+  renderGrid(); 
+
+  // 3. Pequena pausa para o navegador processar o mapa vazio antes de abrir a caixa de impressão
+  setTimeout(() => {
+    window.print();
+
+    // 4. Após fechar a janela de impressão, restauramos o backup e redesenhamos
+    setTimeout(() => {
+      state = backupReservas;
+      renderGrid();
+      showToast("Visualização restaurada");
+    }, 500);
+  }, 300);
+}
   
 </script>
 </body>
