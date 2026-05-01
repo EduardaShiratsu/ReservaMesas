@@ -265,6 +265,7 @@ body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #1a1a1a; 
         <span id="sync-lbl">Conectando...</span>
       </div>
       <button class="btn btn-dark" onclick="window.print()">🖨️ Imprimir</button>
+      <button class="btn" onclick="imprimirVazio()">🖨️ Imprimir vazio</button>
     </div>
   </div>
 
@@ -549,6 +550,20 @@ document.getElementById('inp-data').value = new Date().toISOString().slice(0,10)
 updateSub();
 renderGrid();
 onCtxChange();
+
+function imprimirVazio() {
+  const estadoAtual = {...state};
+  state = {};
+  renderGrid();
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => {
+      state = estadoAtual;
+      renderGrid();
+    }, 500);
+  }, 300);
+}
+  
 </script>
 </body>
 </html>
