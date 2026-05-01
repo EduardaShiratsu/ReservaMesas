@@ -126,27 +126,17 @@ body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #1a1a1a; 
 
 @media print {
   @page { size: A4 landscape; margin: 5mm; }
-
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-
   body { background: #fff; padding: 0; font-family: Arial, sans-serif; }
-
   .screen-wrap { max-width: 100%; border: 2px solid #000; border-radius: 0; box-shadow: none; }
-
-  /* esconde controles */
   .toolbar-right, .overlay, .toast, .header-controls, .sync-badge { display: none !important; }
-
   .header { padding: 4px 10px; border-bottom: 2px solid #000; }
   .header-title h1 { font-size: 13px; font-weight: 700; }
   .header-title .sub { font-size: 11px; font-weight: 600; color: #000; }
-
   .toolbar { background: #fff; padding: 2px 10px; border-bottom: 1px solid #000; }
   .stats { font-size: 10px; color: #000; }
-
   .legend { background: #fff; padding: 3px 10px; border-top: 1px solid #000; font-size: 9px; color: #000; }
-
-  /* grid cabe numa página */
-.grid {
+  .grid {
     gap: 2px;
     padding: 3px;
     display: grid;
@@ -155,79 +145,17 @@ body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #1a1a1a; 
     grid-auto-flow: column;
     height: calc(148mm - 46px);
   }
-
-  .cell {
-    border: 1.5px solid #000 !important;
-    border-radius: 3px;
-    cursor: default;
-    aspect-ratio: unset;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2px;
-    gap: 1px;
-    overflow: hidden;
-  }
-
-  .cell:hover { transform: none !important; }
-
-  /* números grandes e em negrito como na foto */
-  .cell-num {
-    font-size: 11px !important;
-    font-weight: 800 !important;
-    color: #000 !important;
-    font-family: Arial, sans-serif !important;
-    line-height: 1;
-  }
-
-  /* nomes grandes e visíveis */
-  .cell-name {
-    font-size: 8.5px !important;
-    font-weight: 700 !important;
-    color: #000 !important;
-    text-align: center;
-    line-height: 1.1;
-    max-width: 100%;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  /* cativo: nome em vermelho forte */
-  .cell.cativo .cell-name { color: #cc0000 !important; }
-  .cell.cativo .cell-num  { color: #000 !important; }
-  .cell.cativo { background: #fff !important; border-color: #000 !important; }
-
-  /* reservado normal */
-  .cell.reserved .cell-name { color: #1a4fa0 !important; }
-  .cell.reserved { background: #fff !important; border-color: #000 !important; }
-
-  /* bloqueada */
+  .cell { border: 1.5px solid #000 !important; border-radius: 3px; cursor: default; padding: 2px; gap: 1px; overflow: hidden; background: #fff !important; }
+  .cell-num { font-size: 11px !important; font-weight: 800 !important; color: #000 !important; font-family: Arial, sans-serif !important; line-height: 1; }
+  .cell-name { display: none !important; } /* Esconde nomes na impressão vazia se a flag estiver ativa */
   .cell.blocked { background: #ddd !important; border-color: #000 !important; }
-  .cell.blocked .cell-num { color: #666 !important; }
-
-  /* bolinhas grandes e pretas como na foto */
-  .dots-row {
-    display: flex !important;
-    gap: 2px !important;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .dot {
-    display: block !important;
-    width: 5px !important;
-    height: 5px !important;
-    border-radius: 50% !important;
-    background: #000 !important;
-    border: none !important;
-  }
-
-  /* bolinhas dos cativos em vermelho */
-  .cell.cativo .dot { background: #cc0000 !important; }
+  .dot { display: block !important; width: 5px !important; height: 5px !important; border-radius: 50% !important; background: #000 !important; border: none !important; }
 }
+
+/* Classe especial para quando queremos imprimir COM nomes */
+body.print-with-names .cell-name { display: -webkit-box !important; font-size: 8.5px !important; font-weight: 700 !important; color: #000 !important; }
+body.print-with-names .cell.cativo .cell-name { color: #cc0000 !important; }
+body.print-with-names .cell.reserved .cell-name { color: #1a4fa0 !important; }
 </style>
 </head>
 <body>
@@ -264,7 +192,7 @@ body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #1a1a1a; 
         <div class="sync-dot" id="sync-dot"></div>
         <span id="sync-lbl">Conectando...</span>
       </div>
-      <button class="btn btn-dark" onclick="window.print()">🖨️ Imprimir</button>
+      <button class="btn btn-dark" onclick="imprimirComNomes()">🖨️ Imprimir</button>
       <button class="btn" onclick="imprimirVazio()">🖨️ Imprimir vazio</button>
     </div>
   </div>
@@ -277,8 +205,8 @@ body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #1a1a1a; 
     <div class="leg"><div class="leg-box leg-cat"></div>Cativo</div>
     <div class="leg"><div class="leg-box leg-blk"></div>Indisponível</div>
     <div class="leg-right">
-      <div class="leg-di"><div class="dots-row"><div class="dot" style="background:#aaa;-webkit-print-color-adjust:exact"></div><div class="dot" style="background:#aaa;-webkit-print-color-adjust:exact"></div></div>&nbsp;2 pessoas</div>
-      <div class="leg-di"><div class="dots-row"><div class="dot" style="background:#aaa;-webkit-print-color-adjust:exact"></div><div class="dot" style="background:#aaa;-webkit-print-color-adjust:exact"></div><div class="dot" style="background:#aaa;-webkit-print-color-adjust:exact"></div><div class="dot" style="background:#aaa;-webkit-print-color-adjust:exact"></div></div>&nbsp;4 pessoas</div>
+      <div class="leg-di"><div class="dots-row"><div class="dot" style="background:#aaa"></div><div class="dot" style="background:#aaa"></div></div>&nbsp;2 pessoas</div>
+      <div class="leg-di"><div class="dots-row"><div class="dot" style="background:#aaa"></div><div class="dot" style="background:#aaa"></div><div class="dot" style="background:#aaa"></div><div class="dot" style="background:#aaa"></div></div>&nbsp;4 pessoas</div>
     </div>
   </div>
 </div>
@@ -289,7 +217,7 @@ body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #1a1a1a; 
     <div class="modal-sub" id="m-sub"></div>
     <div class="cativo-badge" id="m-cativo-badge" style="display:none">⭐ Cliente Cativo</div>
     <label>Capacidade</label>
-    <div class="cap-badge" style="margin-bottom:14px">
+    <div class="cap-badge">
       <div class="cdots" id="m-dots"></div>
       <span id="m-cap"></span>
     </div>
@@ -308,7 +236,6 @@ body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #1a1a1a; 
 <div class="toast" id="toast"></div>
 
 <script>
-// ── Capacidades por mesa (do arquivo Excel) ────────────────────────────────
 const CAPS = {
   '01':4,'02':2,'03':2,'04':2,'05':2,'06':2,'07':2,'08':2,'09':2,'10':2,
   '11':2,'12':2,'13':2,'14':2,'15':2,'16':4,'17':2,'18':2,'19':4,'20':2,
@@ -322,11 +249,8 @@ const CAPS = {
   '91':2,'92':2,'93':4,'94':4,'95':4,'96':4,'97':4,'98':4,'99':4,'100':4
 };
 
-// Mesa 64 bloqueada
-const BLOCKED = ['64'];
-const BLOCKED = ['26'];  
+const BLOCKED = ['64', '26'];
 
-// ── Clientes cativos por turno (só sábados) ────────────────────────────────
 const CATIVOS = {
   noite: {
     '01':'Claudio','03':'Sueli','12':'Ana Fontoura','29':'Cida',
@@ -360,10 +284,7 @@ function isSabado() {
   return d.getDay() === 6;
 }
 
-function getCativos() {
-  return isSabado() ? (CATIVOS[turno] || {}) : {};
-}
-
+function getCativos() { return isSabado() ? (CATIVOS[turno] || {}) : {}; }
 function fbKey()  { return `reservas/${document.getElementById('inp-data').value||'sem-data'}/${turno}`; }
 function metaKey(){ return `meta/${document.getElementById('inp-data').value||'sem-data'}/${turno}`; }
 
@@ -375,7 +296,6 @@ function setSync(s) {
 function onCtxChange() {
   updateSub();
   state = {}; renderGrid(); setSync('saving');
-
   const rRef = _db.ref(fbKey());
   if (window._rRefObj) window._rRefObj.off();
   window._rRefObj = rRef;
@@ -385,8 +305,7 @@ function onCtxChange() {
   if (window._mRefObj) window._mRefObj.off();
   window._mRefObj = mRef;
   mRef.on('value', snap => {
-    const d = snap.val();
-    document.getElementById('inp-banda').value = d?.banda || '';
+    document.getElementById('inp-banda').value = snap.val()?.banda || '';
     updateSub();
   });
 }
@@ -404,175 +323,83 @@ function saveBanda() {
 }
 
 function updateSub() {
-  const data  = document.getElementById('inp-data').value;
+  const data = document.getElementById('inp-data').value;
   const banda = document.getElementById('inp-banda').value;
-  const t     = turno === 'tarde' ? 'Tarde' : 'Noite';
-  let parts   = [t];
-  if (data) {
-    const d = new Date(data + 'T12:00:00');
-    parts.unshift(d.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'}));
-  }
+  let parts = [turno === 'tarde' ? 'Tarde' : 'Noite'];
+  if (data) parts.unshift(new Date(data + 'T12:00:00').toLocaleDateString('pt-BR'));
   if (banda) parts.push('· ' + banda);
   document.getElementById('sub').textContent = parts.join(' — ');
 }
 
 function renderGrid() {
-  const grid = document.getElementById('grid');
-  grid.innerHTML = '';
+  const grid = document.getElementById('grid'); grid.innerHTML = '';
   const cativos = getCativos();
-
   for (let i = 1; i <= 100; i++) {
-    const n   = String(i).padStart(2,'0');
-    const cap = CAPS[n] || 2;
-    const res = state[n];
-    const cat = cativos[n];
-    const blk = BLOCKED.includes(n);
-
+    const n = String(i).padStart(2,'0'), cap = CAPS[n] || 2, res = state[n], cat = cativos[n], blk = BLOCKED.includes(n);
     const cell = document.createElement('div');
+    cell.className = blk ? 'cell blocked' : (res && res.name !== '__livre__' ? 'cell reserved' : (cat ? 'cell cativo' : 'cell'));
+    if (!blk) cell.onclick = () => openModal(n);
 
-    if (blk) {
-      cell.className = 'cell blocked';
-    } else if (res && res.name === '__livre__') {
-      cell.className = 'cell';
-    } else if (res) {
-      cell.className = 'cell reserved';
-    } else if (cat) {
-      cell.className = 'cell cativo';
-    } else {
-      cell.className = 'cell';
-    }
+    const dots = document.createElement('div'); dots.className = 'dots-row';
+    for (let d = 0; d < cap; d++) { const dot = document.createElement('div'); dot.className = 'dot'; dots.appendChild(dot); }
+    cell.appendChild(dots);
 
-    if (!blk) cell.addEventListener('click', () => openModal(n));
+    const num = document.createElement('div'); num.className = 'cell-num'; num.textContent = n; cell.appendChild(num);
 
-    // dots
-    if (!blk && cap > 0) {
-      const row = document.createElement('div');
-      row.className = 'dots-row';
-      for (let d = 0; d < cap; d++) {
-        const dot = document.createElement('div'); dot.className = 'dot'; row.appendChild(dot);
-      }
-      cell.appendChild(row);
-    }
-
-    // number
-    const num = document.createElement('div');
-    num.className = 'cell-num';
-    num.textContent = n;
-    cell.appendChild(num);
-
-    // name: reserva sobrescreve cativo
-    const displayName = (res?.name && res.name !== '__livre__') ? res.name : (cat && !res ? cat : null);
-    if (displayName) {
-      const nm = document.createElement('div');
-      nm.className = 'cell-name';
-      nm.textContent = displayName;
-      cell.appendChild(nm);
-    }
-
+    const name = (res?.name && res.name !== '__livre__') ? res.name : (cat && !res ? cat : null);
+    if (name) { const nm = document.createElement('div'); nm.className = 'cell-name'; nm.textContent = name; cell.appendChild(nm); }
     grid.appendChild(cell);
   }
   updateStats();
 }
 
 function updateStats() {
-  const cativos   = getCativos();
-  const resTotal  = Object.keys(state).length;
-  const catTotal  = Object.keys(cativos).length;
-  const livres    = 99 - resTotal - Math.max(0, catTotal - resTotal); // 99 porque 64 bloqueada
-  document.getElementById('stats').innerHTML =
-    `<b>${resTotal}</b> reservadas &nbsp;·&nbsp; <b>${catTotal}</b> cativas &nbsp;·&nbsp; <b>${Math.max(0,livres)}</b> livres`;
+  const cats = Object.keys(getCativos()).length, res = Object.keys(state).filter(k => state[k].name !== '__livre__').length;
+  document.getElementById('stats').innerHTML = `<b>${res}</b> reservadas &nbsp;·&nbsp; <b>${cats}</b> cativas &nbsp;·&nbsp; <b>${98-res}</b> livres`;
 }
 
 function openModal(n) {
-  selN = n;
-  const res    = state[n];
-  const cat    = getCativos()[n];
-  const cap    = CAPS[n] || 2;
-  const isCat  = !!cat && !res;
-
+  selN = n; const res = state[n], cat = getCativos()[n], cap = CAPS[n] || 2;
   document.getElementById('m-title').textContent = `Mesa ${n}`;
-  document.getElementById('m-sub').textContent   =
-    res ? `Reservado por: ${res.name}` :
-    cat ? `Cativo: ${cat} — pode substituir abaixo` :
-    'Clique em Reservar para confirmar';
-
+  document.getElementById('m-sub').textContent = res ? `Reservado: ${res.name}` : (cat ? `Cativo: ${cat}` : 'Livre');
   document.getElementById('m-cativo-badge').style.display = cat ? 'inline-flex' : 'none';
-
-  const dotsEl = document.getElementById('m-dots');
-  dotsEl.innerHTML = '';
-  for (let d = 0; d < cap; d++) {
-    const dot = document.createElement('div'); dot.className = 'cdot'; dotsEl.appendChild(dot);
-  }
-  document.getElementById('m-cap').textContent = `${cap} lugares (fixo)`;
-
-  // Se for cativo sem reserva, pré-preenche o nome
+  document.getElementById('m-cap').textContent = `${cap} lugares`;
   document.getElementById('m-name').value = res?.name || (cat || '');
-  document.getElementById('m-obs').value  = res?.obs  || '';
+  document.getElementById('m-obs').value = res?.obs || '';
   document.getElementById('btn-del').style.display = (res || cat) ? 'block' : 'none';
-  document.getElementById('btn-del').textContent = res ? 'Cancelar reserva' : 'Deixar livre';
-
   document.getElementById('overlay').classList.add('open');
-  setTimeout(() => document.getElementById('m-name').focus(), 80);
 }
 
-function closeModal() {
-  document.getElementById('overlay').classList.remove('open'); selN = null;
-}
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
 
 async function saveRes() {
   const name = document.getElementById('m-name').value.trim();
-  const obs  = document.getElementById('m-obs').value.trim();
-  if (!name) { document.getElementById('m-name').focus(); return; }
-  setSync('saving');
-  await _db.ref(`${fbKey()}/${selN}`).set({ name, obs, cap: CAPS[selN] });
-  showToast(`Mesa ${selN} reservada — ${name}`);
+  if (!name) return;
+  await _db.ref(`${fbKey()}/${selN}`).set({ name, obs: document.getElementById('m-obs').value, cap: CAPS[selN] });
   closeModal();
 }
 
 async function delRes() {
-  const n = selN;
-  setSync('saving');
-  await _db.ref(`${fbKey()}/${n}`).set({ name: '__livre__', obs: '', cap: CAPS[n] });
-  showToast(`Mesa ${n} deixada livre`);
+  await _db.ref(`${fbKey()}/${selN}`).set({ name: '__livre__', obs: '', cap: CAPS[selN] });
   closeModal();
 }
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2600);
+function showToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); }
+
+// FUNÇÕES DE IMPRESSÃO CORRIGIDAS
+function imprimirComNomes() {
+  document.body.classList.add('print-with-names');
+  window.print();
+  document.body.classList.remove('print-with-names');
 }
 
-document.getElementById('overlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('overlay')) { e.stopPropagation(); closeModal(); }
-});
+function imprimirVazio() {
+  document.body.classList.remove('print-with-names');
+  window.print();
+}
 
 document.getElementById('inp-data').value = new Date().toISOString().slice(0,10);
-updateSub();
-renderGrid();
 onCtxChange();
-
-  function imprimirVazio() {
-  // 1. Guardamos os dados reais em uma gaveta (backup)
-  const backupReservas = { ...state };
-  
-  // 2. Avisamos o sistema para ignorar as reservas por um momento e renderizar
-  state = {}; 
-  renderGrid(); 
-
-  // 3. Pequena pausa para o navegador processar o mapa vazio antes de abrir a caixa de impressão
-  setTimeout(() => {
-    window.print();
-
-    // 4. Após fechar a janela de impressão, restauramos o backup e redesenhamos
-    setTimeout(() => {
-      state = backupReservas;
-      renderGrid();
-      showToast("Visualização restaurada");
-    }, 500);
-  }, 300);
-}
-  
 </script>
 </body>
 </html>
