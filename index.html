@@ -434,6 +434,8 @@ function renderGrid() {
       cell.className = 'cell reserved';
     } else if (cat && !res) {
       cell.className = 'cell cativo';
+    } else if (res?.name === '__livre__') {
+      cell.className = 'cell';
     } else {
       cell.className = 'cell';
     }
@@ -504,7 +506,8 @@ function openModal(n) {
   // Se for cativo sem reserva, pré-preenche o nome
   document.getElementById('m-name').value = res?.name || (cat || '');
   document.getElementById('m-obs').value  = res?.obs  || '';
-  document.getElementById('btn-del').style.display = res ? 'block' : 'none';
+  document.getElementById('btn-del').style.display = (res || cat) ? 'block' : 'none';
+  document.getElementById('btn-del').textContent = res ? 'Cancelar reserva' : 'Deixar livre';
 
   document.getElementById('overlay').classList.add('open');
   setTimeout(() => document.getElementById('m-name').focus(), 80);
@@ -527,8 +530,8 @@ async function saveRes() {
 async function delRes() {
   const n = selN;
   setSync('saving');
-  await _db.ref(`${fbKey()}/${n}`).remove();
-  showToast(`Reserva da mesa ${n} cancelada`);
+  await _db.ref(`${fbKey()}/${n}`).set({ name: '__livre__', obs: '', cap: CAPS[n] });
+  showToast(`Mesa ${n} deixada livre`);
   closeModal();
 }
 
