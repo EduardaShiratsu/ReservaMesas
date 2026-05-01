@@ -459,7 +459,7 @@ function renderGrid() {
     cell.appendChild(num);
 
     // name: reserva sobrescreve cativo
-    const displayName = res?.name || (cat && !res ? cat : null);
+    const displayName = (res?.name && res.name !== '__livre__') ? res.name : (cat && !res ? cat : null);
     if (displayName) {
       const nm = document.createElement('div');
       nm.className = 'cell-name';
