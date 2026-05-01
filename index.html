@@ -551,19 +551,6 @@ document.getElementById('inp-data').value = new Date().toISOString().slice(0,10)
 updateSub();
 renderGrid();
 onCtxChange();
-
-function imprimirVazio() {
-  const estadoAtual = {...state};
-  state = {};
-  renderGrid();
-  setTimeout(() => {
-    window.print();
-    setTimeout(() => {
-      state = estadoAtual;
-      renderGrid();
-    }, 500);
-  }, 300);
-}
   
 </script>
 </body>
