@@ -430,12 +430,12 @@ function renderGrid() {
 
     if (blk) {
       cell.className = 'cell blocked';
+    } else if (res && res.name === '__livre__') {
+      cell.className = 'cell';
     } else if (res) {
       cell.className = 'cell reserved';
-    } else if (cat && !res) {
+    } else if (cat) {
       cell.className = 'cell cativo';
-    } else if (res?.name === '__livre__') {
-      cell.className = 'cell';
     } else {
       cell.className = 'cell';
     }
