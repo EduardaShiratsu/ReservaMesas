@@ -17,266 +17,221 @@
     messagingSenderId: "662638990559",
     appId: "1:662638990559:web:6fe500487520d1f4a8856a"
   });
-   const _db = firebase.database();
-    const _refs = {};
-    window._fb = {
-      set:    (path, val) => _db.ref(path).set(val),
-      remove: (path)      => _db.ref(path).remove(),
-      listen: (path, cb)  => {
-        if (_refs[path]) _refs[path].off();
-        _refs[path] = _db.ref(path);
-        _refs[path].on('value', snap => cb(snap.val()));
-      }
-    };
+  const _db = firebase.database();
+  const _refs = {};
+  window._fb = {
+    set:    (path, val) => _db.ref(path).set(val),
+    remove: (path)      => _db.ref(path).remove(),
+    listen: (path, cb)  => {
+      if (_refs[path]) _refs[path].off();
+      _refs[path] = _db.ref(path);
+      _refs[path].on('value', snap => cb(snap.val()));
+    }
+  };
 </script>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono&display=swap');
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #1a1a1a; padding: 20px; }
 
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: #f0ede8;
-  color: #1a1a1a;
-  padding: 20px;
-}
+.screen-wrap { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 14px; border: 1px solid #e0ddd6; overflow: hidden; }
 
-/* ── TELA: container normal ── */
-.screen-wrap {
-  max-width: 1100px;
-  margin: 0 auto;
-  background: #fff;
-  border-radius: 14px;
-  border: 1px solid #e0ddd6;
-  overflow: hidden;
-}
-
-/* ── HEADER ── */
-.header {
-  padding: 14px 20px 12px;
-  border-bottom: 1px solid #e0ddd6;
-  display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap;
-}
-
+.header { padding: 14px 20px 12px; border-bottom: 1px solid #e0ddd6; display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; }
 .header-title { flex: 1; min-width: 160px; }
 .header-title h1 { font-size: 17px; font-weight: 600; }
 .header-title .sub { font-size: 12px; color: #999; margin-top: 2px; }
-
 .header-controls { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
 
-.fg label {
-  display: block; font-size: 10px; color: #aaa; margin-bottom: 3px;
-  font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px;
-}
-.fg input[type="date"],
-.fg input[type="text"],
-.fg select {
-  font-family: 'DM Sans', sans-serif; font-size: 13px;
-  padding: 6px 10px; border: 1px solid #e0ddd6; border-radius: 8px;
-  background: #faf9f7; color: #1a1a1a; outline: none;
-}
+.fg label { display: block; font-size: 10px; color: #aaa; margin-bottom: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; }
+.fg input[type="date"], .fg input[type="text"] { font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 6px 10px; border: 1px solid #e0ddd6; border-radius: 8px; background: #faf9f7; color: #1a1a1a; outline: none; }
 .fg input[type="date"] { width: 142px; }
-.fg select             { width: 120px; }
 .fg input[type="text"] { width: 140px; }
 
 .turno-toggle { display: flex; gap: 5px; }
-.turno-btn {
-  padding: 6px 13px; border-radius: 8px; font-family: 'DM Sans', sans-serif;
-  font-size: 13px; font-weight: 500; cursor: pointer;
-  border: 1px solid #e0ddd6; background: #faf9f7; color: #888; transition: all 0.15s;
-}
+.turno-btn { padding: 6px 13px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid #e0ddd6; background: #faf9f7; color: #888; transition: all 0.15s; }
 .turno-btn.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
 
-/* ── TOOLBAR ── */
-.toolbar {
-  padding: 7px 20px; border-bottom: 1px solid #e0ddd6;
-  display: flex; justify-content: space-between; align-items: center;
-  background: #faf9f7; flex-wrap: wrap; gap: 6px;
-}
+.toolbar { padding: 7px 20px; border-bottom: 1px solid #e0ddd6; display: flex; justify-content: space-between; align-items: center; background: #faf9f7; flex-wrap: wrap; gap: 6px; }
 .stats { font-size: 11px; color: #999; }
 .stats b { color: #1a1a1a; font-weight: 600; }
-.sync-badge {
-  display: flex; align-items: center; gap: 5px; font-size: 11px; color: #aaa;
-  padding: 3px 9px; border-radius: 20px; border: 1px solid #e8e5e0; background: #fff;
-}
+.sync-badge { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #aaa; padding: 3px 9px; border-radius: 20px; border: 1px solid #e8e5e0; background: #fff; }
 .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: #ccc; transition: background 0.3s; }
-.sync-dot.ok     { background: #52c41a; }
+.sync-dot.ok { background: #52c41a; }
 .sync-dot.saving { background: #faad14; animation: blink .8s infinite; }
-.sync-dot.error  { background: #ff4d4f; }
+.sync-dot.error { background: #ff4d4f; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
 .toolbar-right { display: flex; gap: 6px; align-items: center; }
-.btn {
-  font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
-  padding: 5px 13px; border-radius: 8px; cursor: pointer;
-  border: 1px solid #e0ddd6; background: #fff; color: #1a1a1a; transition: all .15s;
-}
-.btn:hover   { background: #f5f3ee; }
-.btn-dark    { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.btn { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; padding: 5px 13px; border-radius: 8px; cursor: pointer; border: 1px solid #e0ddd6; background: #fff; color: #1a1a1a; transition: all .15s; }
+.btn:hover { background: #f5f3ee; }
+.btn-dark { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
 .btn-dark:hover { background: #333; }
-.btn-red     { color: #c0392b; border-color: #f5c6c4; }
-.btn-red:hover { background: #fdf0ef; }
 
-/* ── GRID 10×10 ── */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap: 5px;
-  padding: 10px;
-}
+.grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; padding: 10px; }
 
-.cell {
-  border: 1px solid #e8e5e0; border-radius: 7px;
-  aspect-ratio: 1;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  cursor: pointer; transition: all .12s;
-  padding: 3px; gap: 2px;
-  user-select: none; overflow: hidden;
-}
-.cell:hover { border-color: #aaa; background: #faf9f7; transform: scale(1.04); }
+.cell { border: 1px solid #e8e5e0; border-radius: 7px; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; padding: 3px; gap: 2px; user-select: none; overflow: hidden; transition: background .12s, border-color .12s; }
+.cell:hover { border-color: #aaa; background: #faf9f7; }
 .cell.reserved { background: #edf4fb; border-color: #5b9fd4; }
 .cell.reserved:hover { background: #dbeaf7; }
+.cell.cativo { background: #fff5f5; border-color: #e88; }
+.cell.cativo:hover { background: #ffe8e8; }
+.cell.blocked { background: #f0f0f0; border-color: #ccc; cursor: not-allowed; opacity: 0.5; }
 
-.cell-num {
-  font-size: 11px; font-weight: 600; color: #ccc;
-  font-family: 'DM Mono', monospace; line-height: 1;
-}
+.cell-num { font-size: 11px; font-weight: 600; color: #ccc; font-family: 'DM Mono', monospace; line-height: 1; }
 .cell.reserved .cell-num { color: #2c6fa8; }
+.cell.cativo .cell-num { color: #c0392b; }
+.cell.blocked .cell-num { color: #999; }
 
-.cell-name {
-  font-size: 9px; color: #1e6fa8; text-align: center;
-  word-break: break-word; line-height: 1.2; font-weight: 600;
-  max-width: 100%;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
+.cell-name { font-size: 9px; color: #1e6fa8; text-align: center; word-break: break-word; line-height: 1.2; font-weight: 600; max-width: 100%; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cell.cativo .cell-name { color: #c0392b; font-weight: 700; }
 
-.dots-row { display: flex; gap: 2px; align-items: center; justify-content: center; }
-.dot { width: 6px; height: 6px; border-radius: 50%; background: #e0ddd6; }
+.dots-row { display: flex; gap: 2px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: #e0ddd6; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .cell.reserved .dot { background: #5b9fd4; }
+.cell.cativo .dot { background: #e88; }
 
-/* ── LEGEND ── */
-.legend {
-  padding: 7px 20px; border-top: 1px solid #e0ddd6;
-  display: flex; gap: 14px; align-items: center;
-  background: #faf9f7; font-size: 11px; color: #999; flex-wrap: wrap;
-}
+.legend { padding: 7px 20px; border-top: 1px solid #e0ddd6; display: flex; gap: 14px; align-items: center; background: #faf9f7; font-size: 11px; color: #999; flex-wrap: wrap; }
 .leg { display: flex; align-items: center; gap: 5px; }
 .leg-box { width: 11px; height: 11px; border-radius: 3px; border: 1px solid; }
 .leg-free { background: #fff; border-color: #e0ddd6; }
 .leg-res  { background: #edf4fb; border-color: #5b9fd4; }
+.leg-cat  { background: #fff5f5; border-color: #e88; }
+.leg-blk  { background: #f0f0f0; border-color: #ccc; }
 .leg-right { margin-left: auto; display: flex; gap: 10px; }
 .leg-di { display: flex; align-items: center; gap: 4px; }
 
-/* ── MODAL ── */
-.overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.28); z-index: 100;
-  align-items: center; justify-content: center;
-  backdrop-filter: blur(3px);
-}
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.28); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
 .overlay.open { display: flex; }
-.modal {
-  background: #fff; border: 1px solid #e0ddd6; border-radius: 16px;
-  padding: 22px; width: 285px;
-  box-shadow: 0 10px 40px rgba(0,0,0,.14);
-}
+.modal { background: #fff; border: 1px solid #e0ddd6; border-radius: 16px; padding: 22px; width: 285px; box-shadow: 0 10px 40px rgba(0,0,0,.14); }
 .modal h2 { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
 .modal-sub { font-size: 11px; color: #aaa; margin-bottom: 14px; }
-.modal label {
-  display: block; font-size: 10px; color: #aaa; font-weight: 600;
-  text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px;
-}
-.modal input[type="text"] {
-  font-family: 'DM Sans', sans-serif; font-size: 14px; width: 100%;
-  padding: 8px 11px; border: 1px solid #e0ddd6; border-radius: 8px;
-  background: #faf9f7; color: #1a1a1a; outline: none; margin-bottom: 12px;
-}
+.modal label { display: block; font-size: 10px; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px; }
+.modal input[type="text"] { font-family: 'DM Sans', sans-serif; font-size: 14px; width: 100%; padding: 8px 11px; border: 1px solid #e0ddd6; border-radius: 8px; background: #faf9f7; color: #1a1a1a; outline: none; margin-bottom: 12px; }
 .modal input[type="text"]:focus { border-color: #888; background: #fff; }
-.cap-badge {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 6px 12px; border-radius: 8px;
-  background: #edf4fb; border: 1px solid #b8d8f0; margin-bottom: 14px;
-}
+.cap-badge { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border-radius: 8px; background: #edf4fb; border: 1px solid #b8d8f0; margin-bottom: 14px; }
 .cap-badge .cdots { display: flex; gap: 3px; }
-.cap-badge .cdot  { width: 8px; height: 8px; border-radius: 50%; background: #5b9fd4; }
+.cap-badge .cdot { width: 8px; height: 8px; border-radius: 50%; background: #5b9fd4; }
 .cap-badge span { font-size: 12px; color: #2c6fa8; font-weight: 500; }
+.cativo-badge { display: inline-flex; align-items: center; gap: 7px; padding: 5px 10px; border-radius: 8px; background: #fff5f5; border: 1px solid #e88; margin-bottom: 12px; font-size: 11px; color: #c0392b; font-weight: 600; }
 .modal-btns { display: flex; gap: 7px; }
-.modal-btns button {
-  flex: 1; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
-  padding: 9px 4px; border-radius: 10px; cursor: pointer;
-  border: 1px solid #e0ddd6; background: #fff; color: #1a1a1a; transition: all .12s;
-}
+.modal-btns button { flex: 1; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; padding: 9px 4px; border-radius: 10px; cursor: pointer; border: 1px solid #e0ddd6; background: #fff; color: #1a1a1a; transition: all .12s; }
 .modal-btns button:hover { background: #f5f3ee; }
 .mbtn-ok  { background: #1a1a1a !important; color: #fff !important; border-color: #1a1a1a !important; }
-.mbtn-ok:hover  { background: #333 !important; }
+.mbtn-ok:hover { background: #333 !important; }
 .mbtn-del { color: #c0392b !important; border-color: #f5c6c4 !important; }
 .mbtn-del:hover { background: #fdf0ef !important; }
 
-/* ── TOAST ── */
-.toast {
-  position: fixed; bottom: 20px; left: 50%;
-  transform: translateX(-50%) translateY(12px);
-  background: #1a1a1a; color: #fff; font-size: 13px;
-  padding: 9px 18px; border-radius: 100px; z-index: 200;
-  opacity: 0; transition: all .22s; pointer-events: none; white-space: nowrap;
-}
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(12px); background: #1a1a1a; color: #fff; font-size: 13px; padding: 9px 18px; border-radius: 100px; z-index: 200; opacity: 0; transition: all .22s; pointer-events: none; white-space: nowrap; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* ════════════════════════════════════════
-   IMPRESSÃO — paisagem A4, uma página só
-   ════════════════════════════════════════ */
 @media print {
-  @page { size: A4 landscape; margin: 6mm; }
+  @page { size: A4 landscape; margin: 5mm; }
 
-  body { background: #fff; padding: 0; font-size: 10px; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 
-  .screen-wrap {
-    max-width: 100%; border: none; border-radius: 0;
-    box-shadow: none;
+  body { background: #fff; padding: 0; font-family: Arial, sans-serif; }
 
-  .dots-row, .dot { display: flex !important; visibility: visible !important; }
-  }
+  .screen-wrap { max-width: 100%; border: 2px solid #000; border-radius: 0; box-shadow: none; }
 
-  /* esconde tudo que não é conteúdo */
-  .toolbar-right, .overlay, .toast,
-  .header-controls, .sync-badge { display: none !important; }
+  /* esconde controles */
+  .toolbar-right, .overlay, .toast, .header-controls, .sync-badge { display: none !important; }
 
-  .header  { padding: 4px 8px; border-bottom: 1px solid #ccc; }
-  .toolbar { background: #fff; padding: 3px 8px; border-bottom: 1px solid #ccc; }
-  .legend  { background: #fff; padding: 4px 8px; border-top: 1px solid #ccc; }
+  .header { padding: 4px 10px; border-bottom: 2px solid #000; }
+  .header-title h1 { font-size: 13px; font-weight: 700; }
+  .header-title .sub { font-size: 11px; font-weight: 600; color: #000; }
 
-  /* grid compacto pra caber numa página */
+  .toolbar { background: #fff; padding: 2px 10px; border-bottom: 1px solid #000; }
+  .stats { font-size: 10px; color: #000; }
+
+  .legend { background: #fff; padding: 3px 10px; border-top: 1px solid #000; font-size: 9px; color: #000; }
+
+  /* grid cabe numa página */
   .grid {
-    gap: 3px;
-    padding: 5px 6px;
-    /* força altura pra caber na página */
+    gap: 2px;
+    padding: 3px;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
     grid-template-rows: repeat(10, 1fr);
-    height: calc(148mm - 10px); /* A4 landscape height menos header/footer */
+    height: calc(148mm - 46px);
   }
 
   .cell {
-    border-radius: 4px; cursor: default;
-    aspect-ratio: unset; /* deixa o grid controlar a altura */
+    border: 1.5px solid #000 !important;
+    border-radius: 3px;
+    cursor: default;
+    aspect-ratio: unset;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2px;
+    gap: 1px;
+    overflow: hidden;
   }
-  .cell:hover { transform: none; background: #fff; border-color: #e8e5e0; }
-  .cell.reserved:hover { background: #edf4fb; border-color: #5b9fd4; }
 
-  .cell-num  { font-size: 9px; }
-  .cell-name { font-size: 8px; -webkit-line-clamp: 2; }
-  .dot { width: 5px; height: 5px; background: #888 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .cell.reserved .dot { background: #5b9fd4 !important; }
-  .dots-row { display: flex !important; }
+  .cell:hover { transform: none !important; }
+
+  /* números grandes e em negrito como na foto */
+  .cell-num {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    color: #000 !important;
+    font-family: Arial, sans-serif !important;
+    line-height: 1;
+  }
+
+  /* nomes grandes e visíveis */
+  .cell-name {
+    font-size: 8.5px !important;
+    font-weight: 700 !important;
+    color: #000 !important;
+    text-align: center;
+    line-height: 1.1;
+    max-width: 100%;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* cativo: nome em vermelho forte */
+  .cell.cativo .cell-name { color: #cc0000 !important; }
+  .cell.cativo .cell-num  { color: #000 !important; }
+  .cell.cativo { background: #fff !important; border-color: #000 !important; }
+
+  /* reservado normal */
+  .cell.reserved .cell-name { color: #1a4fa0 !important; }
+  .cell.reserved { background: #fff !important; border-color: #000 !important; }
+
+  /* bloqueada */
+  .cell.blocked { background: #ddd !important; border-color: #000 !important; }
+  .cell.blocked .cell-num { color: #666 !important; }
+
+  /* bolinhas grandes e pretas como na foto */
+  .dots-row {
+    display: flex !important;
+    gap: 2px !important;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .dot {
+    display: block !important;
+    width: 5px !important;
+    height: 5px !important;
+    border-radius: 50% !important;
+    background: #000 !important;
+    border: none !important;
+  }
+
+  /* bolinhas dos cativos em vermelho */
+  .cell.cativo .dot { background: #cc0000 !important; }
 }
 </style>
 </head>
 <body>
 <div class="screen-wrap">
 
-  <!-- HEADER -->
   <div class="header">
     <div class="header-title">
       <h1>Reserva de Mesas</h1>
@@ -291,7 +246,7 @@ body {
         <label>Turno</label>
         <div class="turno-toggle">
           <div class="turno-btn active" id="btn-tarde" onclick="setTurno('tarde')">Tarde</div>
-          <div class="turno-btn"        id="btn-noite" onclick="setTurno('noite')">Noite</div>
+          <div class="turno-btn" id="btn-noite" onclick="setTurno('noite')">Noite</div>
         </div>
       </div>
       <div class="fg">
@@ -301,57 +256,47 @@ body {
     </div>
   </div>
 
-  <!-- TOOLBAR -->
   <div class="toolbar">
     <div class="stats" id="stats">—</div>
     <div class="toolbar-right">
       <div class="sync-badge">
         <div class="sync-dot" id="sync-dot"></div>
-        <span id="sync-lbl">—</span>
+        <span id="sync-lbl">Conectando...</span>
       </div>
       <button class="btn btn-dark" onclick="window.print()">🖨️ Imprimir</button>
     </div>
   </div>
 
-  <!-- GRID -->
   <div class="grid" id="grid"></div>
 
-  <!-- LEGEND -->
   <div class="legend">
     <div class="leg"><div class="leg-box leg-free"></div>Livre</div>
     <div class="leg"><div class="leg-box leg-res"></div>Reservado</div>
+    <div class="leg"><div class="leg-box leg-cat"></div>Cativo</div>
+    <div class="leg"><div class="leg-box leg-blk"></div>Indisponível</div>
     <div class="leg-right">
-      <div class="leg-di">
-        <div class="dots-row"><div class="dot" style="background:#aaa"></div><div class="dot" style="background:#aaa"></div></div>
-        2 pessoas
-      </div>
-      <div class="leg-di">
-        <div class="dots-row"><div class="dot" style="background:#aaa"></div><div class="dot" style="background:#aaa"></div><div class="dot" style="background:#aaa"></div><div class="dot" style="background:#aaa"></div></div>
-        4 pessoas
-      </div>
+      <div class="leg-di"><div class="dots-row"><div class="dot" style="background:#aaa;-webkit-print-color-adjust:exact"></div><div class="dot" style="background:#aaa;-webkit-print-color-adjust:exact"></div></div>&nbsp;2 pessoas</div>
+      <div class="leg-di"><div class="dots-row"><div class="dot" style="background:#aaa;-webkit-print-color-adjust:exact"></div><div class="dot" style="background:#aaa;-webkit-print-color-adjust:exact"></div><div class="dot" style="background:#aaa;-webkit-print-color-adjust:exact"></div><div class="dot" style="background:#aaa;-webkit-print-color-adjust:exact"></div></div>&nbsp;4 pessoas</div>
     </div>
   </div>
-
 </div>
 
-<!-- MODAL -->
 <div class="overlay" id="overlay">
   <div class="modal">
     <h2 id="m-title">Mesa 01</h2>
     <div class="modal-sub" id="m-sub"></div>
+    <div class="cativo-badge" id="m-cativo-badge" style="display:none">⭐ Cliente Cativo</div>
     <label>Capacidade</label>
-    <div class="cap-badge">
+    <div class="cap-badge" style="margin-bottom:14px">
       <div class="cdots" id="m-dots"></div>
       <span id="m-cap"></span>
     </div>
     <label>Nome do responsável</label>
-    <input type="text" id="m-name" placeholder="Ex: João Silva"
-           onkeydown="if(event.key==='Enter') saveRes()">
+    <input type="text" id="m-name" placeholder="Ex: João Silva" onkeydown="if(event.key==='Enter') saveRes()">
     <label>Observação (opcional)</label>
-    <input type="text" id="m-obs"  placeholder="Ex: aniversário"
-           onkeydown="if(event.key==='Enter') saveRes()">
+    <input type="text" id="m-obs" placeholder="Ex: aniversário" onkeydown="if(event.key==='Enter') saveRes()">
     <div class="modal-btns">
-      <button class="mbtn-ok"  onclick="saveRes()">Reservar</button>
+      <button class="mbtn-ok" onclick="saveRes()">Reservar</button>
       <button class="mbtn-del" id="btn-del" onclick="delRes()" style="display:none">Cancelar reserva</button>
       <button onclick="closeModal()">Fechar</button>
     </div>
@@ -361,37 +306,81 @@ body {
 <div class="toast" id="toast"></div>
 
 <script>
-// capacidades fixas: ímpares=2, pares=4
-const CAPS = {};
-for (let i = 1; i <= 100; i++)
-  CAPS[String(i).padStart(2,'0')] = i % 2 === 0 ? 4 : 2;
+// ── Capacidades por mesa (do arquivo Excel) ────────────────────────────────
+const CAPS = {
+  '01':4,'02':2,'03':2,'04':2,'05':2,'06':2,'07':2,'08':2,'09':2,'10':2,
+  '11':2,'12':2,'13':2,'14':2,'15':2,'16':4,'17':2,'18':2,'19':4,'20':2,
+  '21':2,'22':2,'23':2,'24':2,'25':2,'26':2,'27':2,'28':2,'29':2,'30':2,
+  '31':4,'32':4,'33':4,'34':4,'35':4,'36':2,'37':2,'38':2,'39':2,'40':2,
+  '41':2,'42':2,'43':4,'44':4,'45':4,'46':4,'47':4,'48':4,'49':4,'50':4,
+  '51':4,'52':4,'53':4,'54':4,'55':4,'56':4,'57':4,'58':4,'59':4,'60':4,
+  '61':4,'62':4,'63':4,'64':0,'65':2,'66':2,'67':2,'68':4,'69':4,'70':4,
+  '71':2,'72':4,'73':4,'74':2,'75':2,'76':2,'77':2,'78':2,'79':2,'80':2,
+  '81':2,'82':4,'83':4,'84':4,'85':4,'86':4,'87':4,'88':2,'89':2,'90':2,
+  '91':2,'92':2,'93':4,'94':4,'95':4,'96':4,'97':4,'98':4,'99':4,'100':4
+};
+
+// Mesa 64 bloqueada
+const BLOCKED = ['64'];
+
+// ── Clientes cativos por turno (só sábados) ────────────────────────────────
+const CATIVOS = {
+  noite: {
+    '01':'Claudio','03':'Sueli','12':'Ana Fontoura','29':'Cida',
+    '31':'Eva','33':'Roseli','35':'Carmela','36':'Celina',
+    '39':'Orlando','43':'Lucio','44':'Sueli','48':'Paixão',
+    '49':'Marcela','50':'Marcela','51':'Marcela','52':'Raquel',
+    '55':'Neuci','56':'Renato','57':'Renato','58':'Renato',
+    '59':'Rose','60':'Zulmara','66':'Heitor','67':'Marlon',
+    '74':'Juvelino','78':'Edinett','99':'Sueli'
+  },
+  tarde: {
+    '01':'Domingos','02':'Lily','03':'José Antônio','05':'Zamora',
+    '06':'Osvaldo','07':'Áurea','12':'Venâncio','15':'Nivaldo',
+    '19':'Ileana','20':'Fichas','24':'Áurea','25':'Carlos',
+    '27':'Ângela','28':'Maria Emília','30':'Cirley',
+    '31':'Ana Maria','32':'Sônia','34':'Marcos','37':'Denise',
+    '40':'Lurdes','41':'Angelina','42':'Silvia','45':'José Luís',
+    '46':'Luiza','48':'Márcio','49':'Adele','50':'Eloy',
+    '53':'Elizabeth Grego','54':'Arlete','56':'Rosa','57':'Mara',
+    '58':'Madalena','59':'Marcos','60':'Yone','72':'Kátia/Murilo',
+    '73':'Roberto','74':'Clemia','75':'Salgueiro','77':'Mara',
+    '78':'Miguel','80':'Alice','81':'França','84':'Vilma',
+    '88':'Bel','98':'Alice'
+  }
+};
 
 let state = {}, selN = null, turno = 'tarde';
+
+function isSabado() {
+  const d = new Date(document.getElementById('inp-data').value + 'T12:00:00');
+  return d.getDay() === 6;
+}
+
+function getCativos() {
+  return isSabado() ? (CATIVOS[turno] || {}) : {};
+}
 
 function fbKey()  { return `reservas/${document.getElementById('inp-data').value||'sem-data'}/${turno}`; }
 function metaKey(){ return `meta/${document.getElementById('inp-data').value||'sem-data'}/${turno}`; }
 
 function setSync(s) {
   document.getElementById('sync-dot').className = 'sync-dot ' + s;
-  document.getElementById('sync-lbl').textContent =
-    ({ok:'Salvo', saving:'Salvando...', error:'Erro'})[s] || s;
+  document.getElementById('sync-lbl').textContent = ({ok:'Salvo', saving:'Salvando...', error:'Erro'})[s] || s;
 }
 
 function onCtxChange() {
   updateSub();
   state = {}; renderGrid(); setSync('saving');
-  if (!window._fb) { setTimeout(onCtxChange, 200); return; }
 
-  // listener de reservas
   const rRef = _db.ref(fbKey());
-  rRef.on('value', snap => {
-    state = snap.val() || {};
-    renderGrid();
-    setSync('ok');
-  });
+  if (window._rRefObj) window._rRefObj.off();
+  window._rRefObj = rRef;
+  rRef.on('value', snap => { state = snap.val() || {}; renderGrid(); setSync('ok'); });
 
-  // listener de meta (banda)
   const mRef = _db.ref(metaKey());
+  if (window._mRefObj) window._mRefObj.off();
+  window._mRefObj = mRef;
   mRef.on('value', snap => {
     const d = snap.val();
     document.getElementById('inp-banda').value = d?.banda || '';
@@ -408,7 +397,7 @@ function setTurno(t) {
 
 function saveBanda() {
   updateSub();
-  if (window._fb) window._fb.set(metaKey(), { banda: document.getElementById('inp-banda').value });
+  _db.ref(metaKey()).set({ banda: document.getElementById('inp-banda').value });
 }
 
 function updateSub() {
@@ -427,53 +416,95 @@ function updateSub() {
 function renderGrid() {
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
+  const cativos = getCativos();
+
   for (let i = 1; i <= 100; i++) {
-    const n = String(i).padStart(2,'0'), res = state[n], cap = CAPS[n];
+    const n   = String(i).padStart(2,'0');
+    const cap = CAPS[n] || 2;
+    const res = state[n];
+    const cat = cativos[n];
+    const blk = BLOCKED.includes(n);
+
     const cell = document.createElement('div');
-    cell.className = 'cell' + (res ? ' reserved' : '');
-    cell.addEventListener('click', () => openModal(n));
 
-    const row = document.createElement('div');
-    row.className = 'dots-row';
-    for (let d = 0; d < cap; d++) {
-      const dot = document.createElement('div'); dot.className = 'dot'; row.appendChild(dot);
+    if (blk) {
+      cell.className = 'cell blocked';
+    } else if (res) {
+      cell.className = 'cell reserved';
+    } else if (cat && !res) {
+      cell.className = 'cell cativo';
+    } else {
+      cell.className = 'cell';
     }
-    cell.appendChild(row);
 
+    if (!blk) cell.addEventListener('click', () => openModal(n));
+
+    // dots
+    if (!blk && cap > 0) {
+      const row = document.createElement('div');
+      row.className = 'dots-row';
+      for (let d = 0; d < cap; d++) {
+        const dot = document.createElement('div'); dot.className = 'dot'; row.appendChild(dot);
+      }
+      cell.appendChild(row);
+    }
+
+    // number
     const num = document.createElement('div');
-    num.className = 'cell-num'; num.textContent = n; cell.appendChild(num);
+    num.className = 'cell-num';
+    num.textContent = n;
+    cell.appendChild(num);
 
-    if (res?.name) {
+    // name: reserva sobrescreve cativo
+    const displayName = res?.name || (cat && !res ? cat : null);
+    if (displayName) {
       const nm = document.createElement('div');
-      nm.className = 'cell-name'; nm.textContent = res.name; cell.appendChild(nm);
+      nm.className = 'cell-name';
+      nm.textContent = displayName;
+      cell.appendChild(nm);
     }
+
     grid.appendChild(cell);
   }
   updateStats();
 }
 
 function updateStats() {
-  const total = Object.keys(state).length;
-  const p2 = Object.values(state).filter(r=>r.cap===2).length;
-  const p4 = Object.values(state).filter(r=>r.cap===4).length;
+  const cativos   = getCativos();
+  const resTotal  = Object.keys(state).length;
+  const catTotal  = Object.keys(cativos).length;
+  const livres    = 99 - resTotal - Math.max(0, catTotal - resTotal); // 99 porque 64 bloqueada
   document.getElementById('stats').innerHTML =
-    `<b>${total}</b> reservadas (${p2}×2 pess., ${p4}×4 pess.) &nbsp;·&nbsp; <b>${100-total}</b> livres`;
+    `<b>${resTotal}</b> reservadas &nbsp;·&nbsp; <b>${catTotal}</b> cativas &nbsp;·&nbsp; <b>${Math.max(0,livres)}</b> livres`;
 }
 
 function openModal(n) {
   selN = n;
-  const res = state[n], cap = CAPS[n];
+  const res    = state[n];
+  const cat    = getCativos()[n];
+  const cap    = CAPS[n] || 2;
+  const isCat  = !!cat && !res;
+
   document.getElementById('m-title').textContent = `Mesa ${n}`;
-  document.getElementById('m-sub').textContent   = res ? `Reservado por: ${res.name}` : 'Clique em Reservar para confirmar';
+  document.getElementById('m-sub').textContent   =
+    res ? `Reservado por: ${res.name}` :
+    cat ? `Cativo: ${cat} — pode substituir abaixo` :
+    'Clique em Reservar para confirmar';
+
+  document.getElementById('m-cativo-badge').style.display = cat ? 'inline-flex' : 'none';
+
   const dotsEl = document.getElementById('m-dots');
   dotsEl.innerHTML = '';
   for (let d = 0; d < cap; d++) {
     const dot = document.createElement('div'); dot.className = 'cdot'; dotsEl.appendChild(dot);
   }
-  document.getElementById('m-cap').textContent  = `${cap} lugares (fixo)`;
-  document.getElementById('m-name').value = res?.name || '';
+  document.getElementById('m-cap').textContent = `${cap} lugares (fixo)`;
+
+  // Se for cativo sem reserva, pré-preenche o nome
+  document.getElementById('m-name').value = res?.name || (cat || '');
   document.getElementById('m-obs').value  = res?.obs  || '';
-  document.getElementById('btn-del').style.display = res ? 'block' : 'none';
+  document.getElementById('btn-del').style.display = (res || cat) ? 'block' : 'none';
+
   document.getElementById('overlay').classList.add('open');
   setTimeout(() => document.getElementById('m-name').focus(), 80);
 }
@@ -486,29 +517,18 @@ async function saveRes() {
   const name = document.getElementById('m-name').value.trim();
   const obs  = document.getElementById('m-obs').value.trim();
   if (!name) { document.getElementById('m-name').focus(); return; }
-  if (!window._fb) {
-    showToast('Conectando...');
-    setTimeout(saveRes, 1000);
-    return;
-  }
   setSync('saving');
-  await window._fb.set(`${fbKey()}/${selN}`, { name, obs, cap: CAPS[selN] });
+  await _db.ref(`${fbKey()}/${selN}`).set({ name, obs, cap: CAPS[selN] });
   showToast(`Mesa ${selN} reservada — ${name}`);
   closeModal();
 }
 
 async function delRes() {
-  if (!window._fb) return;
-  const n = selN; setSync('saving');
-  await window._fb.remove(`${fbKey()}/${n}`);
-  showToast(`Reserva da mesa ${n} cancelada`); closeModal();
-}
-
-async function clearAll() {
-  if (!confirm('Apagar TODAS as reservas deste turno?') || !window._fb) return;
+  const n = selN;
   setSync('saving');
-  await window._fb.remove(fbKey());
-  showToast('Reservas removidas');
+  await _db.ref(`${fbKey()}/${n}`).remove();
+  showToast(`Reserva da mesa ${n} cancelada`);
+  closeModal();
 }
 
 function showToast(msg) {
@@ -518,23 +538,13 @@ function showToast(msg) {
 }
 
 document.getElementById('overlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('overlay')) {
-    e.stopPropagation();
-    closeModal();
-  }
+  if (e.target === document.getElementById('overlay')) { e.stopPropagation(); closeModal(); }
 });
 
 document.getElementById('inp-data').value = new Date().toISOString().slice(0,10);
-updateSub(); renderGrid();
-(function waitFb() {
-  if (window._fb) {
-    onCtxChange();
-    setSync('ok');
-  } else {
-    setSync('saving');
-    setTimeout(waitFb, 150);
-  }
-})();
+updateSub();
+renderGrid();
+onCtxChange();
 </script>
 </body>
 </html>
