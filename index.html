@@ -156,6 +156,14 @@ body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #1a1a1a; 
 body.print-with-names .cell-name { display: -webkit-box !important; font-size: 8.5px !important; font-weight: 700 !important; color: #000 !important; }
 body.print-with-names .cell.cativo .cell-name { color: #cc0000 !important; }
 body.print-with-names .cell.reserved .cell-name { color: #1a4fa0 !important; }
+
+.map-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:200; align-items:center; justify-content:center; }
+.map-overlay.open { display:flex; }
+.map-wrap { background:#111; border-radius:14px; padding:16px; max-width:98vw; max-height:96vh; overflow:auto; }
+.map-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.map-header h2 { color:#fff; font-size:15px; font-weight:600; }
+.map-close { background:none; border:1px solid #555; color:#fff; border-radius:8px; padding:4px 12px; cursor:pointer; font-size:13px; }
+  
 </style>
 </head>
 <body>
@@ -194,6 +202,7 @@ body.print-with-names .cell.reserved .cell-name { color: #1a4fa0 !important; }
       </div>
       <button class="btn btn-dark" onclick="imprimirComNomes()">🖨️ Imprimir</button>
       <button class="btn" onclick="imprimirVazio()">🖨️ Imprimir vazio</button>
+      <button class="btn" onclick="openMap()">🗺️ Ver mapa</button>
     </div>
   </div>
 
@@ -399,6 +408,116 @@ function imprimirVazio() {
 
 document.getElementById('inp-data').value = new Date().toISOString().slice(0,10);
 onCtxChange();
+
+const MAP_POS = {
+  '01':[870,5],'02':[822,5],'03':[774,5],'04':[726,5],'05':[678,5],'06':[630,5],
+  '07':[582,5],'08':[534,5],'09':[486,5],'10':[438,5],'11':[390,5],'12':[342,5],'13':[294,5],
+  '14':[5,105],'15':[5,153],'16':[5,206],'17':[5,259],'18':[53,259],'19':[53,206],'20':[53,153],
+  '21':[153,105],'22':[201,105],
+  '32':[153,153],'31':[201,153],'30':[249,153],
+  '33':[153,206],'34':[201,206],'35':[249,206],
+  '52':[153,259],'51':[201,259],'50':[249,259],
+  '23':[330,105],'24':[378,105],'25':[426,105],
+  '29':[330,153],'28':[378,153],'27':[426,153],
+  '26':[720,153],
+  '36':[297,216],'37':[345,216],'38':[393,216],'39':[441,216],'40':[489,216],'41':[537,216],'42':[585,216],
+  '49':[297,264],'48':[345,264],'47':[393,264],'46':[441,264],'45':[489,264],'44':[537,264],'43':[585,264],
+  '93':[5,375],'85':[53,375],'84':[101,375],
+  '94':[5,423],'86':[53,423],'83':[101,423],
+  '95':[5,471],'87':[53,471],'82':[101,471],
+  '97':[5,519],'89':[53,519],'88':[101,519],'81':[149,519],
+  '53':[197,375],'54':[245,375],'55':[293,375],
+  '71':[197,423],'70':[245,423],'69':[293,423],
+  '72':[197,471],'73':[245,471],
+  '56':[341,365],'57':[395,365],'58':[449,365],'59':[503,365],'60':[557,365],
+  '68':[341,423],'67':[395,423],'66':[449,423],'65':[503,423],
+  '80':[197,519],'79':[245,519],'78':[293,519],'77':[341,519],'76':[389,519],'75':[437,519],'74':[485,519],
+  '98':[581,375],'99':[629,375],'100':[677,375],
+  '63':[581,423],'62':[629,423],'61':[677,423]
+};
+
+function renderMap() {
+  const svg = document.getElementById('map-svg');
+  svg.innerHTML = '';
+  const cativos = getCativos();
+
+  // PALCO
+  const palco = document.createElementNS('http://www.w3.org/2000/svg','rect');
+  Object.assign(palco,{}); 
+  palco.setAttribute('x',640); palco.setAttribute('y',155);
+  palco.setAttribute('width',120); palco.setAttribute('height',145);
+  palco.setAttribute('rx',6); palco.setAttribute('fill','#b8960c');
+  svg.appendChild(palco);
+  const palcoTxt = document.createElementNS('http://www.w3.org/2000/svg','text');
+  palcoTxt.setAttribute('x',700); palcoTxt.setAttribute('y',237);
+  palcoTxt.setAttribute('text-anchor','middle'); palcoTxt.setAttribute('fill','#fff');
+  palcoTxt.setAttribute('font-size',18); palcoTxt.setAttribute('font-weight','bold');
+  palcoTxt.textContent='PALCO'; svg.appendChild(palcoTxt);
+
+  for (const [n, [x,y]] of Object.entries(MAP_POS)) {
+    const res = state[n];
+    const cat = cativos[n];
+    const blk = BLOCKED.includes(n);
+    const isLivre = res?.name === '__livre__';
+    const w = n==='100' ? 44 : 40, h = 40;
+
+    let fill, textCol, nameCol;
+    if (blk)          { fill='#333'; textCol='#666'; nameCol='#666'; }
+    else if (res && !isLivre) { fill='#1a3a5c'; textCol='#7bb8e8'; nameCol='#7bb8e8'; }
+    else if (cat && !res || isLivre && cat) { fill='#3a1a1a'; textCol='#e88'; nameCol='#e88'; }
+    else               { fill='#2a2a2a'; textCol='#666'; nameCol='#666'; }
+
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.style.cursor = blk ? 'not-allowed' : 'pointer';
+    if (!blk) g.addEventListener('click', () => {
+      document.getElementById('map-overlay').classList.remove('open');
+      openModal(n);
+    });
+
+    const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x',x); rect.setAttribute('y',y);
+    rect.setAttribute('width',w); rect.setAttribute('height',h);
+    rect.setAttribute('rx',5); rect.setAttribute('fill',fill);
+    rect.setAttribute('stroke', blk?'#444': (res&&!isLivre?'#3a7fbc': (cat?'#c0392b':'#444')));
+    rect.setAttribute('stroke-width',1);
+    g.appendChild(rect);
+
+    const numTxt = document.createElementNS('http://www.w3.org/2000/svg','text');
+    numTxt.setAttribute('x', x + w/2); numTxt.setAttribute('y', y + (res&&!isLivre&&!cat ? 15 : 22));
+    numTxt.setAttribute('text-anchor','middle'); numTxt.setAttribute('fill',textCol);
+    numTxt.setAttribute('font-size', n==='100'?9:10); numTxt.setAttribute('font-weight','bold');
+    numTxt.textContent = n; g.appendChild(numTxt);
+
+    const displayName = (res?.name && !isLivre) ? res.name : (cat && (!res||isLivre) ? cat : null);
+    if (displayName) {
+      const nameTxt = document.createElementNS('http://www.w3.org/2000/svg','text');
+      nameTxt.setAttribute('x', x + w/2); nameTxt.setAttribute('y', y+30);
+      nameTxt.setAttribute('text-anchor','middle'); nameTxt.setAttribute('fill',nameCol);
+      nameTxt.setAttribute('font-size',7); nameTxt.setAttribute('font-weight','600');
+      const short = displayName.length > 8 ? displayName.slice(0,8)+'.' : displayName;
+      nameTxt.textContent = short; g.appendChild(nameTxt);
+    }
+
+    svg.appendChild(g);
+  }
+}
+
+function openMap() {
+  renderMap();
+  document.getElementById('map-overlay').classList.add('open');
+}
+  
 </script>
+
+  <div class="map-overlay" id="map-overlay">
+  <div class="map-wrap">
+    <div class="map-header">
+      <h2>🗺️ Mapa de Mesas</h2>
+      <button class="map-close" onclick="document.getElementById('map-overlay').classList.remove('open')">Fechar</button>
+    </div>
+    <svg id="map-svg" viewBox="0 0 820 600" style="width:100%;max-height:82vh" font-family="Arial,sans-serif"></svg>
+  </div>
+</div>
+  
 </body>
 </html>
