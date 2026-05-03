@@ -454,127 +454,52 @@ document.getElementById('inp-data').value = new Date().toISOString().slice(0,10)
 onCtxChange();
 
 const MAP_POS = {
-  '01':[870,5],'02':[822,5],'03':[774,5],'04':[726,5],'05':[678,5],'06':[630,5],
-  '07':[582,5],'08':[534,5],'09':[486,5],'10':[438,5],'11':[390,5],'12':[342,5],'13':[294,5],
-  '14':[5,105],'15':[5,153],'16':[5,206],'17':[5,259],'18':[53,259],'19':[53,206],'20':[53,153],
-  '21':[153,105],'22':[201,105],
-  '32':[153,153],'31':[201,153],'30':[249,153],
-  '33':[153,206],'34':[201,206],'35':[249,206],
-  '52':[153,259],'51':[201,259],'50':[249,259],
-  '23':[330,105],'24':[378,105],'25':[426,105],
-  '29':[330,153],'28':[378,153],'27':[426,153],
-  '26':[720,153],
-  '36':[297,216],'37':[345,216],'38':[393,216],'39':[441,216],'40':[489,216],'41':[537,216],'42':[585,216],
-  '49':[297,264],'48':[345,264],'47':[393,264],'46':[441,264],'45':[489,264],'44':[537,264],'43':[585,264],
-  '93':[5,375],'85':[53,375],'84':[101,375],
-  '94':[5,423],'86':[53,423],'83':[101,423],
-  '95':[5,471],'87':[53,471],'82':[101,471],
-  '97':[5,519],'89':[53,519],'88':[101,519],'81':[149,519],
-  '53':[197,375],'54':[245,375],'55':[293,375],
-  '71':[197,423],'70':[245,423],'69':[293,423],
-  '72':[197,471],'73':[245,471],
-  '56':[341,365],'57':[395,365],'58':[449,365],'59':[503,365],'60':[557,365],
-  '68':[341,423],'67':[395,423],'66':[449,423],'65':[503,423],
-  '80':[197,519],'79':[245,519],'78':[293,519],'77':[341,519],'76':[389,519],'75':[437,519],'74':[485,519],
-  '98':[581,375],'99':[629,375],'100':[677,375],
-  '63':[581,423],'62':[629,423],'61':[677,423]
+  // Bloco Superior (Mesas 01 a 13)
+  '01':[720,40],'02':[670,40],'03':[620,40],'04':[570,40],'05':[520,40],'06':[470,40],
+  '07':[420,40],'08':[370,40],'09':[320,40],'10':[270,40],'11':[220,40],'12':[170,40],'13':[120,40],
+
+  // Lateral Esquerda Superior (14 a 20)
+  '14':[50,110],'15':[50,170],'16':[40,240],'17':[40,340],'18':[100,340],'19':[110,240],'20':[140,180],
+
+  // Centro Superior - Bloco 21, 22, 32, 31, 30
+  '21':[260,120],'22':[310,120],
+  '32':[240,180],'31':[290,180],'30':[340,180],
+
+  // Centro Superior - Bloco 23, 24, 25, 29, 28, 27
+  '23':[490,120],'24':[540,120],'25':[590,120],
+  '29':[490,180],'28':[540,180],'27':[590,180],
+
+  // Fileira do Meio (33 a 42)
+  '33':[250,270],'34':[300,270],'35':[350,270],
+  '36':[430,300],
+  '37':[480,280],'38':[530,280],'39':[580,280],'40':[630,280],'41':[680,280],'42':[730,280],
+
+  // Fileira abaixo (52 a 43)
+  '52':[250,360],'51':[300,360],'50':[350,360],
+  '49':[450,380],'48':[500,360],'47':[550,360],'46':[600,360],'45':[650,360],'44':[700,360],'43':[750,360],
+
+  // Bloco Inferior Esquerdo (93 a 82 e 97 a 81)
+  '93':[40,540],'85':[120,540],'84':[200,540],
+  '94':[40,600],'86':[120,600],'83':[200,600],
+  '95':[40,660],'87':[120,660],'82':[200,660],
+  '97':[40,750],'89':[120,750],'88':[200,750],'81':[280,750],
+
+  // Centro Inferior (53 a 73)
+  '53':[260,530],'54':[330,530],'55':[400,530],
+  '71':[260,600],'70':[330,600],'69':[400,600],
+  '72':[260,670],'73':[330,670],
+
+  // Centro Inferior Direita (56 a 65)
+  '56':[450,560],'57':[520,580],'58':[590,580],'59':[660,580],'60':[730,580],
+  '68':[430,640],'67':[520,640],'66':[590,640],'65':[660,640],
+
+  // Fileira de Baixo (80 a 74)
+  '80':[260,750],'79':[330,750],'78':[400,750],'77':[470,750],'76':[540,750],'75':[610,750],'74':[680,750],
+
+  // Bloco Final perto do Palco (98 a 61)
+  '98':[750,680],'99':[820,680],'100':[890,680],
+  '63':[750,750],'62':[820,750],'61':[890,750]
 };
-
-function renderMap() {
-  const svg = document.getElementById('map-svg');
-  svg.innerHTML = '';
-  const cativos = getCativos();
-
-  // Cores baseadas na sua imagem
-  const CORES = {
-    LIVRE: '#c8a45e',    // Dourado/Bege da imagem
-    RESERVADO: '#4a90e2', // Azul para destacar reserva
-    CATIVO: '#e74c3c',    // Vermelho para cativo
-    TEXTO: '#fff'
-  };
-
-  // DESENHAR PALCO (Vertical à direita)
-  const palcoG = document.createElementNS('http://www.w3.org/2000/svg','g');
-  const palcoRect = document.createElementNS('http://www.w3.org/2000/svg','rect');
-  palcoRect.setAttribute('x', 780); palcoRect.setAttribute('y', 440);
-  palcoRect.setAttribute('width', 90); palcoRect.setAttribute('height', 220);
-  palcoRect.setAttribute('fill', '#c8a45e');
-  palcoG.appendChild(palcoRect);
-
-  const palcoTxt = document.createElementNS('http://www.w3.org/2000/svg','text');
-  palcoTxt.setAttribute('x', 825); palcoTxt.setAttribute('y', 550);
-  palcoTxt.setAttribute('transform', 'rotate(-90, 825, 550)');
-  palcoTxt.setAttribute('text-anchor','middle'); palcoTxt.setAttribute('fill','#000');
-  palcoTxt.setAttribute('font-size',24); palcoTxt.setAttribute('font-weight','bold');
-  palcoTxt.textContent='PALCO'; palcoG.appendChild(palcoTxt);
-  svg.appendChild(palcoG);
-
-  // DESENHAR MESAS
-  for (const [n, [x, y]] of Object.entries(MAP_POS)) {
-    const res = state[n];
-    const cat = cativos[n];
-    const isLivre = !res || res.name === '__livre__';
-    
-    let corMesa = CORES.LIVRE;
-    if (!isLivre) corMesa = CORES.RESERVADO;
-    else if (cat) corMesa = CORES.CATIVO;
-
-    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-    g.style.cursor = 'pointer';
-    g.onclick = () => {
-      document.getElementById('map-overlay').classList.remove('open');
-      openModal(n);
-    };
-
-    // Desenhar "Cadeiras" (os traços laterais da imagem)
-    const criarCadeira = (cx, cy, cw, ch) => {
-      const r = document.createElementNS('http://www.w3.org/2000/svg','rect');
-      r.setAttribute('x', cx); r.setAttribute('y', cy);
-      r.setAttribute('width', cw); r.setAttribute('height', ch);
-      r.setAttribute('fill', corMesa);
-      r.setAttribute('opacity', '0.6');
-      return r;
-    };
-
-    // Cadeiras laterais
-    g.appendChild(criarCadeira(x - 5, y + 10, 4, 20)); // Esquerda
-    g.appendChild(criarCadeira(x + 41, y + 10, 4, 20)); // Direita
-
-    // Mesa Principal
-    const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
-    rect.setAttribute('x', x); rect.setAttribute('y', y);
-    rect.setAttribute('width', 40); rect.setAttribute('height', 40);
-    rect.setAttribute('fill', 'none');
-    rect.setAttribute('stroke', corMesa);
-    rect.setAttribute('stroke-width', 2);
-    g.appendChild(rect);
-
-    // Número da Mesa
-    const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
-    txt.setAttribute('x', x + 20); txt.setAttribute('y', y + 25);
-    txt.setAttribute('text-anchor','middle');
-    txt.setAttribute('fill', corMesa);
-    txt.setAttribute('font-size', '16');
-    txt.setAttribute('font-weight', 'bold');
-    txt.textContent = n;
-    g.appendChild(txt);
-
-    // Nome (se houver) - Aparece pequeno embaixo da mesa
-    const displayName = (!isLivre) ? res.name : (cat ? cat : null);
-    if (displayName) {
-        const nameTxt = document.createElementNS('http://www.w3.org/2000/svg','text');
-        nameTxt.setAttribute('x', x + 20); nameTxt.setAttribute('y', y + 52);
-        nameTxt.setAttribute('text-anchor','middle');
-        nameTxt.setAttribute('fill', '#fff');
-        nameTxt.setAttribute('font-size', '8');
-        const reduzido = displayName.length > 10 ? displayName.slice(0,10)+'..' : displayName;
-        nameTxt.textContent = reduzido.toUpperCase();
-        g.appendChild(nameTxt);
-    }
-
-    svg.appendChild(g);
-  }
-}
 
 function openMap() {
   renderMap();
@@ -589,7 +514,7 @@ function openMap() {
       <h2>🗺️ Mapa de Mesas</h2>
       <button class="map-close" onclick="document.getElementById('map-overlay').classList.remove('open')">Fechar</button>
     </div>
-    <svg id="map-svg" viewBox="0 0 920 600" preserveAspectRatio="xMidYMid meet" font-family="Arial,sans-serif"></svg>
+    <svg id="map-svg" viewBox="0 0 1000 850" preserveAspectRatio="xMidYMid meet" font-family="Arial,sans-serif"></svg>
   </div>
 </div>
   
