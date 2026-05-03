@@ -454,56 +454,106 @@ document.getElementById('inp-data').value = new Date().toISOString().slice(0,10)
 onCtxChange();
 
 const MAP_POS = {
-  // Bloco Superior (Mesas 01 a 13)
   '01':[720,40],'02':[670,40],'03':[620,40],'04':[570,40],'05':[520,40],'06':[470,40],
   '07':[420,40],'08':[370,40],'09':[320,40],'10':[270,40],'11':[220,40],'12':[170,40],'13':[120,40],
-
-  // Lateral Esquerda Superior (14 a 20)
   '14':[50,110],'15':[50,170],'16':[40,240],'17':[40,340],'18':[100,340],'19':[110,240],'20':[140,180],
-
-  // Centro Superior - Bloco 21, 22, 32, 31, 30
-  '21':[260,120],'22':[310,120],
-  '32':[240,180],'31':[290,180],'30':[340,180],
-
-  // Centro Superior - Bloco 23, 24, 25, 29, 28, 27
-  '23':[490,120],'24':[540,120],'25':[590,120],
-  '29':[490,180],'28':[540,180],'27':[590,180],
-
-  // Fileira do Meio (33 a 42)
-  '33':[250,270],'34':[300,270],'35':[350,270],
-  '36':[430,300],
+  '21':[260,120],'22':[310,120],'32':[240,180],'31':[290,180],'30':[340,180],
+  '23':[490,120],'24':[540,120],'25':[590,120],'29':[490,180],'28':[540,180],'27':[590,180],
+  '33':[250,270],'34':[300,270],'35':[350,270],'36':[430,300],
   '37':[480,280],'38':[530,280],'39':[580,280],'40':[630,280],'41':[680,280],'42':[730,280],
-
-  // Fileira abaixo (52 a 43)
-  '52':[250,360],'51':[300,360],'50':[350,360],
-  '49':[450,380],'48':[500,360],'47':[550,360],'46':[600,360],'45':[650,360],'44':[700,360],'43':[750,360],
-
-  // Bloco Inferior Esquerdo (93 a 82 e 97 a 81)
-  '93':[40,540],'85':[120,540],'84':[200,540],
-  '94':[40,600],'86':[120,600],'83':[200,600],
-  '95':[40,660],'87':[120,660],'82':[200,660],
-  '97':[40,750],'89':[120,750],'88':[200,750],'81':[280,750],
-
-  // Centro Inferior (53 a 73)
-  '53':[260,530],'54':[330,530],'55':[400,530],
-  '71':[260,600],'70':[330,600],'69':[400,600],
-  '72':[260,670],'73':[330,670],
-
-  // Centro Inferior Direita (56 a 65)
-  '56':[450,560],'57':[520,580],'58':[590,580],'59':[660,580],'60':[730,580],
-  '68':[430,640],'67':[520,640],'66':[590,640],'65':[660,640],
-
-  // Fileira de Baixo (80 a 74)
-  '80':[260,750],'79':[330,750],'78':[400,750],'77':[470,750],'76':[540,750],'75':[610,750],'74':[680,750],
-
-  // Bloco Final perto do Palco (98 a 61)
-  '98':[750,680],'99':[820,680],'100':[890,680],
-  '63':[750,750],'62':[820,750],'61':[890,750]
+  '52':[250,360],'51':[300,360],'50':[350,360],'49':[450,380],'48':[500,360],'47':[550,360],'46':[600,360],
+  '45':[650,360],'44':[700,360],'43':[750,360],'93':[40,540],'85':[120,540],'84':[200,540],
+  '94':[40,600],'86':[120,600],'83':[200,600],'95':[40,660],'87':[120,660],'82':[200,660],
+  '97':[40,750],'89':[120,750],'88':[200,750],'81':[280,750],'53':[260,530],'54':[330,530],
+  '55':[400,530],'71':[260,600],'70':[330,600],'69':[400,600],'72':[260,670],'73':[330,670],
+  '56':[450,560],'57':[520,580],'58':[590,580],'59':[660,580],'60':[730,580],'68':[430,640],
+  '67':[520,640],'66':[590,640],'65':[660,640],'80':[260,750],'79':[330,750],'78':[400,750],
+  '77':[470,750],'76':[540,750],'75':[610,750],'74':[680,750],'98':[750,680],'99':[820,680],
+  '100':[890,680],'63':[750,750],'62':[820,750],'61':[890,750]
 };
+
+function renderMap() {
+  const svg = document.getElementById('map-svg');
+  if (!svg) return;
+  svg.innerHTML = '';
+  const cativos = typeof getCativos === 'function' ? getCativos() : {};
+
+  const CORES = { MOLDURA: '#c2a67a', RESERVADO: '#4a90e2', CATIVO: '#e74c3c', TEXTO_NOME: '#ffffff' };
+
+  // Labels de Ambiente
+  const addTexto = (x, y, txt) => {
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x', x); t.setAttribute('y', y);
+    t.setAttribute('fill', '#666'); t.setAttribute('font-size', '20');
+    t.setAttribute('font-weight', 'bold'); t.textContent = txt;
+    svg.appendChild(t);
+  };
+  addTexto(60, 480, 'ENTRADA');
+  addTexto(550, 480, 'PISTA');
+
+  // Desenhar Palco
+  const palcoG = document.createElementNS('http://www.w3.org/2000/svg','g');
+  const palcoRect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+  palcoRect.setAttribute('x', 850); palcoRect.setAttribute('y', 150);
+  palcoRect.setAttribute('width', 80); palcoRect.setAttribute('height', 180);
+  palcoRect.setAttribute('fill', '#c2a67a'); palcoG.appendChild(palcoRect);
+  const palcoTxt = document.createElementNS('http://www.w3.org/2000/svg','text');
+  palcoTxt.setAttribute('x', 890); palcoTxt.setAttribute('y', 240);
+  palcoTxt.setAttribute('transform', 'rotate(-90, 890, 240)');
+  palcoTxt.setAttribute('text-anchor','middle'); palcoTxt.setAttribute('fill','#000');
+  palcoTxt.setAttribute('font-size',20); palcoTxt.setAttribute('font-weight','bold');
+  palcoTxt.textContent='PALCO'; palcoG.appendChild(palcoTxt);
+  svg.appendChild(palcoG);
+
+  // Loop das Mesas
+  for (const [n, [x, y]] of Object.entries(MAP_POS)) {
+    const res = state[n];
+    const cat = cativos[n];
+    const isLivre = !res || res.name === '__livre__';
+    let cor = CORES.MOLDURA;
+    if (!isLivre) cor = CORES.RESERVADO;
+    else if (cat) cor = CORES.CATIVO;
+
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.style.cursor = 'pointer';
+    g.onclick = () => { document.getElementById('map-overlay').classList.remove('open'); openModal(n); };
+
+    // Cadeiras (Traços)
+    const t1 = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    t1.setAttribute('x', x+5); t1.setAttribute('y', y-8); t1.setAttribute('width', 30); t1.setAttribute('height', 4); t1.setAttribute('fill', cor);
+    g.appendChild(t1);
+    const t2 = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    t2.setAttribute('x', x+5); t2.setAttribute('y', y+44); t2.setAttribute('width', 30); t2.setAttribute('height', 4); t2.setAttribute('fill', cor);
+    g.appendChild(t2);
+
+    // Quadrado da Mesa
+    const r = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    r.setAttribute('x', x); r.setAttribute('y', y); r.setAttribute('width', 40); r.setAttribute('height', 40);
+    r.setAttribute('fill', 'none'); r.setAttribute('stroke', cor); r.setAttribute('stroke-width', 2);
+    g.appendChild(r);
+
+    // Número
+    const num = document.createElementNS('http://www.w3.org/2000/svg','text');
+    num.setAttribute('x', x+20); num.setAttribute('y', y+26); num.setAttribute('text-anchor','middle');
+    num.setAttribute('fill', cor); num.setAttribute('font-size', '16'); num.setAttribute('font-weight','bold');
+    num.textContent = n; g.appendChild(num);
+
+    // Nome
+    const nome = (!isLivre) ? res.name : (cat ? cat : null);
+    if (nome) {
+      const nt = document.createElementNS('http://www.w3.org/2000/svg','text');
+      nt.setAttribute('x', x+20); nt.setAttribute('y', y+62); nt.setAttribute('text-anchor','middle');
+      nt.setAttribute('fill', '#fff'); nt.setAttribute('font-size', '8');
+      nt.textContent = nome.substring(0, 10).toUpperCase(); g.appendChild(nt);
+    }
+    svg.appendChild(g);
+  }
+}
 
 function openMap() {
   renderMap();
-  document.getElementById('map-overlay').classList.add('open');
+  const overlay = document.getElementById('map-overlay');
+  if (overlay) overlay.classList.add('open');
 }
   
 </script>
