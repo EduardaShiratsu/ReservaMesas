@@ -464,21 +464,14 @@ const MAP_POS = {
   '37':[480,280],'38':[530,280],'39':[580,280],'40':[630,280],'41':[680,280],'42':[730,280],
   '52':[250,360],'51':[300,360],'50':[350,360],'49':[450,380],'48':[500,360],'47':[550,360],'46':[600,360],
   '45':[650,360],'44':[700,360],'43':[750,360],
-
-  // Bloco Inferior (Com mais espaço entre as mesas 80, 81 e as outras)
-  '93':[50,540],'85':[130,540],'84':[210,540],
-  '94':[50,610],'86':[130,610],'83':[210,610],
-  '95':[50,680],'87':[130,680],'82':[210,680],
-  '97':[50,780],'89':[130,780],'88':[210,780],
-  '53':[290,540],'54':[360,540],'55':[430,540],
-  '71':[290,610],'70':[360,610],'69':[430,610],
-  '72':[290,680],'73':[360,680],
-  '81':[290,780],'80':[360,780], 
-  '79':[430,780],'78':[500,780],'77':[570,780],'76':[640,780],'75':[710,780],'74':[780,780],
-  '56':[480,560],'57':[550,580],'58':[620,580],'59':[690,580],'60':[760,580],
-  '68':[460,640],'67':[550,640],'66':[620,640],'65':[690,640],
-  '98':[780,680],'99':[850,680],'100':[920,680],
-  '63':[780,750],'62':[850,750],'61':[920,750]
+  // Bloco Inferior
+  '93':[50,540],'85':[130,540],'84':[210,540],'94':[50,610],'86':[130,610],'83':[210,610],
+  '95':[50,680],'87':[130,680],'82':[210,680],'97':[50,780],'89':[130,780],'88':[210,780],
+  '53':[290,540],'54':[360,540],'55':[430,540],'71':[290,610],'70':[360,610],'69':[430,610],
+  '72':[290,680],'73':[360,680],'81':[290,780],'80':[360,780],'79':[430,780],'78':[500,780],
+  '77':[570,780],'76':[640,780],'75':[710,780],'74':[780,780],'56':[480,560],'57':[550,580],
+  '58':[620,580],'59':[690,580],'60':[760,580],'68':[460,640],'67':[550,640],'66':[620,640],
+  '65':[690,640],'98':[780,680],'99':[850,680],'100':[920,680],'63':[780,750],'62':[850,750],'61':[920,750]
 };
 
 function renderMap() {
@@ -486,96 +479,82 @@ function renderMap() {
   if (!svg) return;
   svg.innerHTML = '';
   const cativos = typeof getCativos === 'function' ? getCativos() : {};
-
   const CORES = { MOLDURA: '#c2a67a', RESERVADO: '#4a90e2', CATIVO: '#e74c3c', TEXTO_NOME: '#ffffff' };
 
-  // Labels de Ambiente
-  const addTexto = (x, y, txt) => {
+  // Labels
+  const addLabel = (x, y, txt) => {
     const t = document.createElementNS('http://www.w3.org/2000/svg','text');
-    t.setAttribute('x', x); t.setAttribute('y', y);
-    t.setAttribute('fill', '#666'); t.setAttribute('font-size', '20');
-    t.setAttribute('font-weight', 'bold'); t.textContent = txt;
+    t.setAttribute('x', x); t.setAttribute('y', y); t.setAttribute('fill', '#666');
+    t.setAttribute('font-size', '22'); t.setAttribute('font-weight', 'bold'); t.textContent = txt;
     svg.appendChild(t);
   };
-  addTexto(60, 480, 'ENTRADA');
-  addTexto(550, 480, 'PISTA');
+  addLabel(80, 480, 'ENTRADA'); addLabel(580, 480, 'PISTA');
 
-  // Desenhar Palco
-    const palcoG = document.createElementNS('http://www.w3.org/2000/svg','g');
-    const palcoRect = document.createElementNS('http://www.w3.org/2000/svg','rect');
-    palcoRect.setAttribute('x', 860);  // Posição na direita
-    palcoRect.setAttribute('y', 440);  // Centralizado entre os blocos
-    palcoRect.setAttribute('width', 100); 
-    palcoRect.setAttribute('height', 220);
-    palcoRect.setAttribute('fill', '#c2a67a');
-    palcoG.appendChild(palcoRect);
-    
-    const palcoTxt = document.createElementNS('http://www.w3.org/2000/svg','text');
-    palcoTxt.setAttribute('x', 910); 
-    palcoTxt.setAttribute('y', 550);
-    palcoTxt.setAttribute('transform', 'rotate(-90, 910, 550)');
-    palcoTxt.setAttribute('text-anchor','middle'); 
-    palcoTxt.setAttribute('fill','#000');
-    palcoTxt.setAttribute('font-size',24); 
-    palcoTxt.setAttribute('font-weight','bold');
-    palcoTxt.textContent='PALCO';
-    palcoG.appendChild(palcoTxt);
-    svg.appendChild(palcoG);
+  // Palco
+  const palcoG = document.createElementNS('http://www.w3.org/2000/svg','g');
+  const palcoRect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+  palcoRect.setAttribute('x', 880); palcoRect.setAttribute('y', 440);
+  palcoRect.setAttribute('width', 80); palcoRect.setAttribute('height', 220);
+  palcoRect.setAttribute('fill', '#c2a67a'); palcoG.appendChild(palcoRect);
+  const palcoTxt = document.createElementNS('http://www.w3.org/2000/svg','text');
+  palcoTxt.setAttribute('x', 925); palcoTxt.setAttribute('y', 550);
+  palcoTxt.setAttribute('transform', 'rotate(-90, 925, 550)');
+  palcoTxt.setAttribute('text-anchor','middle'); palcoTxt.setAttribute('fill','#000');
+  palcoTxt.setAttribute('font-size',22); palcoTxt.setAttribute('font-weight','bold');
+  palcoTxt.textContent='PALCO'; palcoG.appendChild(palcoTxt);
+  svg.appendChild(palcoG);
 
-  // Loop das Mesas
+  // Mesas
   for (const [n, [x, y]] of Object.entries(MAP_POS)) {
-    const res = state[n];
-    const cat = cativos[n];
+    const res = state[n], cat = cativos[n], cap = CAPS[n] || 2;
     const isLivre = !res || res.name === '__livre__';
     let cor = CORES.MOLDURA;
-    if (!isLivre) cor = CORES.RESERVADO;
-    else if (cat) cor = CORES.CATIVO;
+    if (!isLivre) cor = CORES.RESERVADO; else if (cat) cor = CORES.CATIVO;
 
     const g = document.createElementNS('http://www.w3.org/2000/svg','g');
     g.style.cursor = 'pointer';
     g.onclick = () => { document.getElementById('map-overlay').classList.remove('open'); openModal(n); };
 
-    // Cadeiras (Traços)
-    const t1 = document.createElementNS('http://www.w3.org/2000/svg','rect');
-    t1.setAttribute('x', x+5); t1.setAttribute('y', y-8); t1.setAttribute('width', 30); t1.setAttribute('height', 4); t1.setAttribute('fill', cor);
-    g.appendChild(t1);
-    const t2 = document.createElementNS('http://www.w3.org/2000/svg','rect');
-    t2.setAttribute('x', x+5); t2.setAttribute('y', y+44); t2.setAttribute('width', 30); t2.setAttribute('height', 4); t2.setAttribute('fill', cor);
-    g.appendChild(t2);
+    // Desenho das cadeiras baseado na capacidade
+    const addChair = (cx, cy, cw, ch) => {
+        const r = document.createElementNS('http://www.w3.org/2000/svg','rect');
+        r.setAttribute('x', cx); r.setAttribute('y', cy); r.setAttribute('width', cw); r.setAttribute('height', ch);
+        r.setAttribute('fill', cor); r.setAttribute('rx', 1); g.appendChild(r);
+    };
 
-    // Quadrado da Mesa
-    const r = document.createElementNS('http://www.w3.org/2000/svg','rect');
-    r.setAttribute('x', x); r.setAttribute('y', y); r.setAttribute('width', 40); r.setAttribute('height', 40);
-    r.setAttribute('fill', 'none'); r.setAttribute('stroke', cor); r.setAttribute('stroke-width', 2);
-    g.appendChild(r);
+    if (cap === 4) {
+        addChair(x+5, y-8, 30, 4);   // Cima
+        addChair(x+5, y+44, 30, 4);  // Baixo
+        addChair(x-8, y+5, 4, 30);   // Esquerda
+        addChair(x+44, y+5, 4, 30);  // Direita
+    } else {
+        addChair(x-8, y+5, 4, 30);   // Esquerda
+        addChair(x+44, y+5, 4, 30);  // Direita
+    }
 
-    // Número
+    const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x', x); rect.setAttribute('y', y); rect.setAttribute('width', 40); rect.setAttribute('height', 40);
+    rect.setAttribute('fill', 'none'); rect.setAttribute('stroke', cor); rect.setAttribute('stroke-width', 2);
+    g.appendChild(rect);
+
     const num = document.createElementNS('http://www.w3.org/2000/svg','text');
     num.setAttribute('x', x+20); num.setAttribute('y', y+26); num.setAttribute('text-anchor','middle');
     num.setAttribute('fill', cor); num.setAttribute('font-size', '16'); num.setAttribute('font-weight','bold');
     num.textContent = n; g.appendChild(num);
 
-    // Nome
-    if (nome) {
+    const nomeDisp = (!isLivre) ? res.name : (cat ? cat : null);
+    if (nomeDisp) {
       const nt = document.createElementNS('http://www.w3.org/2000/svg','text');
-      nt.setAttribute('x', x + 20);
-      nt.setAttribute('y', y + 62); // Aumentamos para 62 para o nome descer e não bater na cadeira
-      nt.setAttribute('text-anchor', 'middle');
-      nt.setAttribute('fill', '#fff');
-      nt.setAttribute('font-size', '8');
-      nt.textContent = nome.substring(0, 10).toUpperCase();
-      g.appendChild(nt);
-}
+      nt.setAttribute('x', x+20); nt.setAttribute('y', y+62); nt.setAttribute('text-anchor','middle');
+      nt.setAttribute('fill', '#fff'); nt.setAttribute('font-size', '8');
+      nt.textContent = nomeDisp.substring(0, 12).toUpperCase(); g.appendChild(nt);
     }
     svg.appendChild(g);
   }
 }
 
-function openMap() {
-  renderMap();
-  const overlay = document.getElementById('map-overlay');
-  if (overlay) overlay.classList.add('open');
-}
+function openMap() { renderMap(); document.getElementById('map-overlay').classList.add('open'); }
+```[cite: 4]
   
 </script>
 
