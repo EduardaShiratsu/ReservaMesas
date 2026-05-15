@@ -453,7 +453,7 @@ function closeModal() { document.getElementById('overlay').classList.remove('ope
 async function saveRes() {
   const name = document.getElementById('m-name').value.trim();
   if (!name) return;
-  await _db.ref(`${fbKey()}/${selN}`).set({ name, obs: document.getElementById('m-obs').value, cap: CAPS[selN] });
+  await _db.ref(`${fbKey()}/${selN}`).set({ name, obs: document.getElementById('m-obs').value, cap: CAPS[selN], timestamp: new Date().toISOString() });
   closeModal();
 }
 
@@ -523,6 +523,11 @@ async function openHistModal() {
         blockHtml += `<span style="color:#aaa;font-family:'DM Mono',monospace;min-width:30px">M${mesa}</span>`;
         blockHtml += `<span style="font-weight:500">${res.name}</span>`;
         if (res.obs) blockHtml += `<span style="color:#aaa;font-size:11px">· ${res.obs}</span>`;
+        if (res.timestamp) {
+          const ts = new Date(res.timestamp);
+          const tsStr = ts.toLocaleDateString('pt-BR') + ' às ' + ts.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          blockHtml += `<span style="color:#ccc;font-size:10px;margin-left:auto">${tsStr}</span>`;
+        }
         blockHtml += `</div>`;
       }
       blockHtml += `</div>`;
