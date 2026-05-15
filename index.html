@@ -106,8 +106,8 @@ body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #1a1a1a; 
 .modal h2 { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
 .modal-sub { font-size: 11px; color: #aaa; margin-bottom: 14px; }
 .modal label { display: block; font-size: 10px; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px; }
-.modal input[type="text"] { font-family: 'DM Sans', sans-serif; font-size: 14px; width: 100%; padding: 8px 11px; border: 1px solid #e0ddd6; border-radius: 8px; background: #faf9f7; color: #1a1a1a; outline: none; margin-bottom: 12px; }
-.modal input[type="text"]:focus { border-color: #888; background: #fff; }
+.modal input[type="text"], .modal input[type="password"] { font-family: 'DM Sans', sans-serif; font-size: 14px; width: 100%; padding: 8px 11px; border: 1px solid #e0ddd6; border-radius: 8px; background: #faf9f7; color: #1a1a1a; outline: none; margin-bottom: 12px; }
+.modal input[type="text"]:focus, .modal input[type="password"]:focus { border-color: #888; background: #fff; }
 .cap-badge { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border-radius: 8px; background: #edf4fb; border: 1px solid #b8d8f0; margin-bottom: 14px; }
 .cap-badge .cdots { display: flex; gap: 3px; }
 .cap-badge .cdot { width: 8px; height: 8px; border-radius: 50%; background: #5b9fd4; }
@@ -247,6 +247,7 @@ body.print-with-names .cell.reserved .cell-name { color: #1a4fa0 !important; }
       <button class="btn btn-dark" onclick="imprimirComNomes()">🖨️ Imprimir</button>
       <button class="btn" onclick="imprimirVazio()">🖨️ Imprimir vazio</button>
       <button class="btn" onclick="openMap()">🗺️ Ver mapa</button>
+      <button class="btn" onclick="openHistModal()">📋 Histórico</button>
     </div>
   </div>
 
@@ -287,6 +288,31 @@ body.print-with-names .cell.reserved .cell-name { color: #1a4fa0 !important; }
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div class="overlay" id="pwd-overlay">
+  <div class="modal">
+    <h2>Confirmação necessária</h2>
+    <div class="modal-sub">Digite a senha para cancelar a reserva</div>
+    <label>Senha</label>
+    <input type="password" id="pwd-input" placeholder="••••" onkeydown="if(event.key==='Enter') confirmPwd()">
+    <div id="pwd-error" style="color:#c0392b;font-size:11px;margin:-8px 0 10px;display:none">Senha incorreta. Tente novamente.</div>
+    <div class="modal-btns">
+      <button class="mbtn-ok" onclick="confirmPwd()">Confirmar</button>
+      <button onclick="closePwdModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="hist-overlay">
+  <div class="modal" style="width:460px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column">
+    <h2>Histórico de Reservas</h2>
+    <div class="modal-sub">Todas as reservas · mais recentes primeiro</div>
+    <div id="hist-content" style="flex:1;overflow-y:auto;margin-top:8px"></div>
+    <div class="modal-btns" style="margin-top:14px;flex-shrink:0">
+      <button onclick="closeHistModal()">Fechar</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const CAPS = {
@@ -431,9 +457,86 @@ async function saveRes() {
   closeModal();
 }
 
+let _pendingAction = null;
+
+function askPassword(cb) {
+  _pendingAction = cb;
+  document.getElementById('pwd-input').value = '';
+  document.getElementById('pwd-error').style.display = 'none';
+  document.getElementById('pwd-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('pwd-input').focus(), 80);
+}
+
+function closePwdModal() {
+  document.getElementById('pwd-overlay').classList.remove('open');
+  _pendingAction = null;
+}
+
+function confirmPwd() {
+  if (document.getElementById('pwd-input').value === '1234') {
+    closePwdModal();
+    if (_pendingAction) _pendingAction();
+  } else {
+    document.getElementById('pwd-error').style.display = 'block';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-input').focus();
+  }
+}
+
 async function delRes() {
-  await _db.ref(`${fbKey()}/${selN}`).set({ name: '__livre__', obs: '', cap: CAPS[selN] });
-  closeModal();
+  askPassword(async () => {
+    await _db.ref(`${fbKey()}/${selN}`).set({ name: '__livre__', obs: '', cap: CAPS[selN] });
+    closeModal();
+  });
+}
+
+async function openHistModal() {
+  const content = document.getElementById('hist-content');
+  content.innerHTML = '<div style="color:#aaa;font-size:13px;text-align:center;padding:20px">Carregando...</div>';
+  document.getElementById('hist-overlay').classList.add('open');
+
+  const snap = await _db.ref('reservas').once('value');
+  const data = snap.val() || {};
+  const dates = Object.keys(data).filter(d => d !== 'sem-data').sort((a, b) => b.localeCompare(a));
+
+  if (dates.length === 0) {
+    content.innerHTML = '<div style="color:#aaa;font-size:13px;text-align:center;padding:20px">Nenhuma reserva encontrada</div>';
+    return;
+  }
+
+  let html = '';
+  for (const date of dates) {
+    const dateObj = new Date(date + 'T12:00:00');
+    const dateStr = dateObj.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    let blockHtml = '';
+    for (const turnoKey of ['tarde', 'noite']) {
+      const turnoData = data[date]?.[turnoKey];
+      if (!turnoData) continue;
+      const reservas = Object.entries(turnoData).filter(([, v]) => v.name && v.name !== '__livre__');
+      if (reservas.length === 0) continue;
+      reservas.sort((a, b) => a[0].localeCompare(b[0]));
+      blockHtml += `<div style="margin-left:8px;margin-bottom:10px">`;
+      blockHtml += `<div style="font-size:10px;font-weight:600;text-transform:uppercase;color:#aaa;letter-spacing:.6px;margin-bottom:5px">${turnoKey === 'tarde' ? 'Tarde' : 'Noite'}</div>`;
+      for (const [mesa, res] of reservas) {
+        blockHtml += `<div style="display:flex;gap:8px;align-items:baseline;margin-bottom:3px;font-size:12px">`;
+        blockHtml += `<span style="color:#aaa;font-family:'DM Mono',monospace;min-width:30px">M${mesa}</span>`;
+        blockHtml += `<span style="font-weight:500">${res.name}</span>`;
+        if (res.obs) blockHtml += `<span style="color:#aaa;font-size:11px">· ${res.obs}</span>`;
+        blockHtml += `</div>`;
+      }
+      blockHtml += `</div>`;
+    }
+    if (!blockHtml) continue;
+    html += `<div style="margin-bottom:16px;border-bottom:1px solid #f0ede8;padding-bottom:12px">`;
+    html += `<div style="font-size:12px;font-weight:600;margin-bottom:8px;padding:4px 8px;background:#f5f3ee;border-radius:6px;text-transform:capitalize">${dateStr}</div>`;
+    html += blockHtml + `</div>`;
+  }
+
+  content.innerHTML = html || '<div style="color:#aaa;font-size:13px;text-align:center;padding:20px">Nenhuma reserva encontrada</div>';
+}
+
+function closeHistModal() {
+  document.getElementById('hist-overlay').classList.remove('open');
 }
 
 function showToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); }
@@ -563,19 +666,6 @@ function openMap() {
   renderMap();
   const overlay = document.getElementById('map-overlay');
   if (overlay) overlay.classList.add('open');
-
-  svg.innerHTML += `
-        <g id="palco-grupo">
-            <rect x="880" y="275" width="100" height="250" fill="#222" stroke="#000" stroke-width="2" rx="5"/>
-            <text x="935" y="400" 
-                  transform="rotate(-90, 935, 400)" 
-                  fill="white" 
-                  font-weight="bold" 
-                  font-size="20" 
-                  text-anchor="middle">PALCO</text>
-            <line x1="880" y1="275" x2="880" y2="525" stroke="#555" stroke-width="4"/>
-        </g>
-    `;
 }
   
 </script>
