@@ -473,9 +473,10 @@ function closePwdModal() {
 }
 
 function confirmPwd() {
-  if (document.getElementById('pwd-input').value === '1234') {
+  if (document.getElementById('pwd-input').value === '6767') {
+    const action = _pendingAction;
     closePwdModal();
-    if (_pendingAction) _pendingAction();
+    if (action) action();
   } else {
     document.getElementById('pwd-error').style.display = 'block';
     document.getElementById('pwd-input').value = '';
@@ -602,20 +603,6 @@ function renderMap() {
   };
   addTexto(60, 480, 'ENTRADA');
   addTexto(550, 480, 'PISTA');
-
-  // Desenhar Palco
-  const palcoG = document.createElementNS('http://www.w3.org/2000/svg','g');
-  const palcoRect = document.createElementNS('http://www.w3.org/2000/svg','rect');
-  palcoRect.setAttribute('x', 850); palcoRect.setAttribute('y', 150);
-  palcoRect.setAttribute('width', 80); palcoRect.setAttribute('height', 180);
-  palcoRect.setAttribute('fill', '#c2a67a'); palcoG.appendChild(palcoRect);
-  const palcoTxt = document.createElementNS('http://www.w3.org/2000/svg','text');
-  palcoTxt.setAttribute('x', 890); palcoTxt.setAttribute('y', 240);
-  palcoTxt.setAttribute('transform', 'rotate(-90, 890, 240)');
-  palcoTxt.setAttribute('text-anchor','middle'); palcoTxt.setAttribute('fill','#000');
-  palcoTxt.setAttribute('font-size',20); palcoTxt.setAttribute('font-weight','bold');
-  palcoTxt.textContent='PALCO'; palcoG.appendChild(palcoTxt);
-  svg.appendChild(palcoG);
 
   // Loop das Mesas
   for (const [n, [x, y]] of Object.entries(MAP_POS)) {
