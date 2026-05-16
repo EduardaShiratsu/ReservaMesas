@@ -444,6 +444,15 @@ function updateStats() {
 }
 
 function openModal(n) {
+  const res = state[n];
+  if (res && res.name !== '__livre__') {
+    askPassword(() => _doOpenModal(n));
+  } else {
+    _doOpenModal(n);
+  }
+}
+
+function _doOpenModal(n) {
   selN = n; const res = state[n], cat = getCativos()[n], cap = CAPS[n] || 2;
   document.getElementById('m-title').textContent = `Mesa ${n}`;
   document.getElementById('m-sub').textContent = res ? `Reservado: ${res.name}` : (cat ? `Cativo: ${cat}` : 'Livre');
