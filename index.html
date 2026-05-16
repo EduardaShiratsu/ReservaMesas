@@ -108,6 +108,8 @@ body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #1a1a1a; 
 .modal label { display: block; font-size: 10px; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px; }
 .modal input[type="text"], .modal input[type="password"] { font-family: 'DM Sans', sans-serif; font-size: 14px; width: 100%; padding: 8px 11px; border: 1px solid #e0ddd6; border-radius: 8px; background: #faf9f7; color: #1a1a1a; outline: none; margin-bottom: 12px; }
 .modal input[type="text"]:focus, .modal input[type="password"]:focus { border-color: #888; background: #fff; }
+.modal input[readonly] { background: #f0ede8; color: #777; cursor: default; }
+.modal input[readonly]:focus { border-color: #e0ddd6; background: #f0ede8; }
 .cap-badge { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border-radius: 8px; background: #edf4fb; border: 1px solid #b8d8f0; margin-bottom: 14px; }
 .cap-badge .cdots { display: flex; gap: 3px; }
 .cap-badge .cdot { width: 8px; height: 8px; border-radius: 50%; background: #5b9fd4; }
@@ -285,7 +287,7 @@ body.print-with-names .cell.reserved .cell-name { color: #1a4fa0 !important; }
     <label>Observação (opcional)</label>
     <input type="text" id="m-obs" placeholder="Ex: aniversário" onkeydown="if(event.key==='Enter') saveRes()">
     <div class="modal-btns">
-      <button class="mbtn-ok" onclick="saveRes()">Reservar</button>
+      <button class="mbtn-ok" id="btn-reservar" onclick="saveRes()">Reservar</button>
       <button class="mbtn-del" id="btn-del" onclick="delRes()" style="display:none">Cancelar reserva</button>
       <button onclick="closeModal()">Fechar</button>
     </div>
@@ -444,23 +446,22 @@ function updateStats() {
 }
 
 function openModal(n) {
-  const res = state[n];
-  if (res && res.name !== '__livre__') {
-    askPassword(() => _doOpenModal(n));
-  } else {
-    _doOpenModal(n);
-  }
-}
+  selN = n;
+  const res = state[n], cat = getCativos()[n], cap = CAPS[n] || 2;
+  const isReserved = !!(res && res.name !== '__livre__');
 
-function _doOpenModal(n) {
-  selN = n; const res = state[n], cat = getCativos()[n], cap = CAPS[n] || 2;
   document.getElementById('m-title').textContent = `Mesa ${n}`;
   document.getElementById('m-sub').textContent = res ? `Reservado: ${res.name}` : (cat ? `Cativo: ${cat}` : 'Livre');
   document.getElementById('m-cativo-badge').style.display = cat ? 'inline-flex' : 'none';
   document.getElementById('m-cap').textContent = `${cap} lugares`;
   document.getElementById('m-name').value = res?.name || (cat || '');
   document.getElementById('m-obs').value = res?.obs || '';
+
+  document.getElementById('m-name').readOnly = isReserved;
+  document.getElementById('m-obs').readOnly = isReserved;
+  document.getElementById('btn-reservar').style.display = isReserved ? 'none' : '';
   document.getElementById('btn-del').style.display = (res || cat) ? 'block' : 'none';
+
   document.getElementById('overlay').classList.add('open');
   updateWaMsg();
 }
