@@ -498,48 +498,82 @@ async function openHistModal() {
 
   const snap = await _db.ref('reservas').once('value');
   const data = snap.val() || {};
-  const dates = Object.keys(data).filter(d => d !== 'sem-data').sort((a, b) => b.localeCompare(a));
 
-  if (dates.length === 0) {
+  // Achata todas as reservas em uma lista plana, filtrando cativos e __livre__
+  const todas = [];
+  for (const [eventDate, turnos] of Object.entries(data)) {
+    if (eventDate === 'sem-data' || !turnos || typeof turnos !== 'object') continue;
+    const eventDateObj = new Date(eventDate + 'T12:00:00');
+    const isSat = eventDateObj.getDay() === 6;
+    for (const [turnoKey, turnoData] of Object.entries(turnos)) {
+      if (!turnoData || typeof turnoData !== 'object') continue;
+      const cativosDoTurno = isSat ? (CATIVOS[turnoKey] || {}) : {};
+      for (const [mesa, res] of Object.entries(turnoData)) {
+        if (!res.name || res.name === '__livre__') continue;
+        if (res.name === cativosDoTurno[mesa]) continue;
+        todas.push({ mesa, res, turnoKey, eventDate });
+      }
+    }
+  }
+
+  if (todas.length === 0) {
     content.innerHTML = '<div style="color:#aaa;font-size:13px;text-align:center;padding:20px">Nenhuma reserva encontrada</div>';
     return;
   }
 
-  let html = '';
-  for (const date of dates) {
-    const dateObj = new Date(date + 'T12:00:00');
-    const dateStr = dateObj.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    let blockHtml = '';
-    const isSat = dateObj.getDay() === 6;
-    for (const turnoKey of ['tarde', 'noite']) {
-      const turnoData = data[date]?.[turnoKey];
-      if (!turnoData) continue;
-      const cativosDoTurno = isSat ? (CATIVOS[turnoKey] || {}) : {};
-      const reservas = Object.entries(turnoData).filter(([mesa, v]) =>
-        v.name && v.name !== '__livre__' && v.name !== cativosDoTurno[mesa]
-      );
-      if (reservas.length === 0) continue;
-      reservas.sort((a, b) => a[0].localeCompare(b[0]));
-      blockHtml += `<div style="margin-left:8px;margin-bottom:10px">`;
-      blockHtml += `<div style="font-size:10px;font-weight:600;text-transform:uppercase;color:#aaa;letter-spacing:.6px;margin-bottom:5px">${turnoKey === 'tarde' ? 'Tarde' : 'Noite'}</div>`;
-      for (const [mesa, res] of reservas) {
-        blockHtml += `<div style="display:flex;gap:8px;align-items:baseline;margin-bottom:3px;font-size:12px">`;
-        blockHtml += `<span style="color:#aaa;font-family:'DM Mono',monospace;min-width:30px">M${mesa}</span>`;
-        blockHtml += `<span style="font-weight:500">${res.name}</span>`;
-        if (res.obs) blockHtml += `<span style="color:#aaa;font-size:11px">· ${res.obs}</span>`;
-        if (res.timestamp) {
-          const ts = new Date(res.timestamp);
-          const tsStr = ts.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-          blockHtml += `<span style="color:#ccc;font-size:10px;margin-left:auto">${tsStr}</span>`;
-        }
-        blockHtml += `</div>`;
-      }
-      blockHtml += `</div>`;
+  // Agrupa pela DATA DE CRIAÇÃO (timestamp), reservas antigas ficam em grupo separado
+  const grupos = {};
+  const semTimestamp = [];
+  for (const item of todas) {
+    if (item.res.timestamp) {
+      const dia = item.res.timestamp.slice(0, 10); // YYYY-MM-DD
+      if (!grupos[dia]) grupos[dia] = [];
+      grupos[dia].push(item);
+    } else {
+      semTimestamp.push(item);
     }
-    if (!blockHtml) continue;
+  }
+
+  // Ordena grupos por data de criação (mais recente primeiro)
+  const diasOrdenados = Object.keys(grupos).sort((a, b) => b.localeCompare(a));
+
+  let html = '';
+  for (const dia of diasOrdenados) {
+    const dateObj = new Date(dia + 'T12:00:00');
+    const dateStr = dateObj.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+    // Ordena itens do grupo por horário crescente
+    const itens = grupos[dia].sort((a, b) => a.res.timestamp.localeCompare(b.res.timestamp));
+
     html += `<div style="margin-bottom:16px;border-bottom:1px solid #f0ede8;padding-bottom:12px">`;
     html += `<div style="font-size:12px;font-weight:600;margin-bottom:8px;padding:4px 8px;background:#f5f3ee;border-radius:6px">${dateStr}</div>`;
-    html += blockHtml + `</div>`;
+    for (const { mesa, res, turnoKey, eventDate } of itens) {
+      const hora = new Date(res.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const evStr = new Date(eventDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+      html += `<div style="display:flex;gap:8px;align-items:baseline;margin-bottom:4px;font-size:12px">`;
+      html += `<span style="color:#aaa;font-family:'DM Mono',monospace;min-width:30px">M${mesa}</span>`;
+      html += `<span style="font-weight:500">${res.name}</span>`;
+      html += `<span style="color:#bbb;font-size:10px">${turnoKey === 'tarde' ? 'tarde' : 'noite'} ${evStr}</span>`;
+      if (res.obs) html += `<span style="color:#aaa;font-size:11px">· ${res.obs}</span>`;
+      html += `<span style="color:#ccc;font-size:10px;margin-left:auto">${hora}</span>`;
+      html += `</div>`;
+    }
+    html += `</div>`;
+  }
+
+  // Reservas antigas sem timestamp agrupadas no fim
+  if (semTimestamp.length > 0) {
+    html += `<div style="margin-bottom:16px">`;
+    html += `<div style="font-size:12px;font-weight:600;margin-bottom:8px;padding:4px 8px;background:#f5f3ee;border-radius:6px;color:#aaa">Reservas antigas</div>`;
+    for (const { mesa, res, turnoKey, eventDate } of semTimestamp) {
+      const evStr = new Date(eventDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      html += `<div style="display:flex;gap:8px;align-items:baseline;margin-bottom:4px;font-size:12px">`;
+      html += `<span style="color:#aaa;font-family:'DM Mono',monospace;min-width:30px">M${mesa}</span>`;
+      html += `<span style="font-weight:500">${res.name}</span>`;
+      html += `<span style="color:#bbb;font-size:10px">${turnoKey === 'tarde' ? 'tarde' : 'noite'} ${evStr}</span>`;
+      if (res.obs) html += `<span style="color:#aaa;font-size:11px">· ${res.obs}</span>`;
+      html += `</div>`;
+    }
+    html += `</div>`;
   }
 
   content.innerHTML = html || '<div style="color:#aaa;font-size:13px;text-align:center;padding:20px">Nenhuma reserva encontrada</div>';
