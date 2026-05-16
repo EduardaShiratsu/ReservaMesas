@@ -121,6 +121,11 @@ body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #1a1a1a; 
 .mbtn-del { color: #c0392b !important; border-color: #f5c6c4 !important; }
 .mbtn-del:hover { background: #fdf0ef !important; }
 
+.wa-preview { margin-top: 14px; background: #f0faf0; border: 1px solid #c3e6c3; border-radius: 10px; padding: 10px 12px; font-size: 11.5px; line-height: 1.65; white-space: pre-wrap; color: #1a1a1a; display: none; word-break: break-word; }
+.wa-preview.visible { display: block; }
+.wa-copy-btn { display: none; margin-top: 7px; width: 100%; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; padding: 7px; border-radius: 8px; cursor: pointer; border: 1px solid #c3e6c3; background: #e8f8e8; color: #2d6a2d; transition: all .12s; }
+.wa-copy-btn:hover { background: #d4f0d4; }
+
 .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(12px); background: #1a1a1a; color: #fff; font-size: 13px; padding: 9px 18px; border-radius: 100px; z-index: 200; opacity: 0; transition: all .22s; pointer-events: none; white-space: nowrap; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -276,7 +281,7 @@ body.print-with-names .cell.reserved .cell-name { color: #1a4fa0 !important; }
       <span id="m-cap"></span>
     </div>
     <label>Nome do responsável</label>
-    <input type="text" id="m-name" placeholder="Ex: João Silva" onkeydown="if(event.key==='Enter') saveRes()">
+    <input type="text" id="m-name" placeholder="Ex: João Silva" oninput="updateWaMsg()" onkeydown="if(event.key==='Enter') saveRes()">
     <label>Observação (opcional)</label>
     <input type="text" id="m-obs" placeholder="Ex: aniversário" onkeydown="if(event.key==='Enter') saveRes()">
     <div class="modal-btns">
@@ -284,6 +289,8 @@ body.print-with-names .cell.reserved .cell-name { color: #1a4fa0 !important; }
       <button class="mbtn-del" id="btn-del" onclick="delRes()" style="display:none">Cancelar reserva</button>
       <button onclick="closeModal()">Fechar</button>
     </div>
+    <div class="wa-preview" id="wa-preview"></div>
+    <button class="wa-copy-btn" id="wa-copy-btn" onclick="copyWaMsg()">📋 Copiar mensagem</button>
   </div>
 </div>
 
@@ -446,9 +453,42 @@ function openModal(n) {
   document.getElementById('m-obs').value = res?.obs || '';
   document.getElementById('btn-del').style.display = (res || cat) ? 'block' : 'none';
   document.getElementById('overlay').classList.add('open');
+  updateWaMsg();
 }
 
 function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+
+function buildWaMsg() {
+  const name = document.getElementById('m-name').value.trim();
+  if (!name || !selN) return '';
+  const dataVal = document.getElementById('inp-data').value;
+  const dataFmt = dataVal
+    ? new Date(dataVal + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })
+    : '—';
+  const horario = turno === 'tarde' ? '15h às 20h' : '22h às 4h';
+  const banda = document.getElementById('inp-banda').value.trim() || '—';
+  return `Sua reserva está confirmada! ✨\n\n📋 Mesa: ${selN}\n👤 Nome: ${name}\n📅 Data: ${dataFmt}\n🕒 Horário: ${horario}\n🎶 Banda: ${banda}\n\n📍 Zais — Rua Domingos de Moraes, 1630\nVila Mariana, São Paulo\nValet na porta\n\nTe esperamos na pista! 🕺💃`;
+}
+
+function updateWaMsg() {
+  const msg = buildWaMsg();
+  const preview = document.getElementById('wa-preview');
+  const btn = document.getElementById('wa-copy-btn');
+  if (msg) {
+    preview.textContent = msg;
+    preview.classList.add('visible');
+    btn.style.display = 'block';
+  } else {
+    preview.classList.remove('visible');
+    btn.style.display = 'none';
+  }
+}
+
+function copyWaMsg() {
+  const msg = buildWaMsg();
+  if (!msg) return;
+  navigator.clipboard.writeText(msg).then(() => showToast('Mensagem copiada! 📋'));
+}
 
 async function saveRes() {
   const name = document.getElementById('m-name').value.trim();
