@@ -623,18 +623,29 @@ async function openHistModal() {
     html += `</div>`;
   }
 
-  // Reservas antigas sem timestamp agrupadas no fim
+  // Reservas antigas sem timestamp — agrupadas por data do evento
   if (semTimestamp.length > 0) {
     html += `<div style="margin-bottom:16px">`;
-    html += `<div style="font-size:12px;font-weight:600;margin-bottom:8px;padding:4px 8px;background:#f5f3ee;border-radius:6px;color:#aaa">Reservas antigas</div>`;
-    for (const { mesa, res, turnoKey, eventDate } of semTimestamp) {
-      const evStr = new Date(eventDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-      html += `<div style="display:flex;gap:8px;align-items:baseline;margin-bottom:4px;font-size:12px">`;
-      html += `<span style="color:#aaa;font-family:'DM Mono',monospace;min-width:30px">M${mesa}</span>`;
-      html += `<span style="font-weight:500">${res.name}</span>`;
-      html += `<span style="color:#bbb;font-size:10px">${turnoKey === 'tarde' ? 'tarde' : 'noite'} ${evStr}</span>`;
-      if (res.obs) html += `<span style="color:#aaa;font-size:11px">· ${res.obs}</span>`;
-      html += `</div>`;
+    html += `<div style="font-size:12px;font-weight:600;margin-bottom:10px;padding:4px 8px;background:#f5f3ee;border-radius:6px;color:#aaa">Reservas antigas</div>`;
+
+    const antigasGrupos = {};
+    for (const item of semTimestamp) {
+      if (!antigasGrupos[item.eventDate]) antigasGrupos[item.eventDate] = [];
+      antigasGrupos[item.eventDate].push(item);
+    }
+    const antigasDatas = Object.keys(antigasGrupos).sort((a, b) => b.localeCompare(a));
+
+    for (const evDate of antigasDatas) {
+      const evDateStr = new Date(evDate + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+      html += `<div style="font-size:11px;font-weight:600;color:#bbb;margin:10px 0 5px;padding-left:2px">${evDateStr}</div>`;
+      for (const { mesa, res, turnoKey } of antigasGrupos[evDate]) {
+        html += `<div style="display:flex;gap:8px;align-items:baseline;margin-bottom:4px;font-size:12px">`;
+        html += `<span style="color:#aaa;font-family:'DM Mono',monospace;min-width:30px">M${mesa}</span>`;
+        html += `<span style="font-weight:500">${res.name}</span>`;
+        html += `<span style="color:#bbb;font-size:10px">${turnoKey === 'tarde' ? 'tarde' : 'noite'}</span>`;
+        if (res.obs) html += `<span style="color:#aaa;font-size:11px">· ${res.obs}</span>`;
+        html += `</div>`;
+      }
     }
     html += `</div>`;
   }
