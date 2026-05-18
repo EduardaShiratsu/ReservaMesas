@@ -123,6 +123,17 @@ body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #1a1a1a; 
 .mbtn-del { color: #c0392b !important; border-color: #f5c6c4 !important; }
 .mbtn-del:hover { background: #fdf0ef !important; }
 
+.cat-mgr-modal { background: #fff; border: 1px solid #e0ddd6; border-radius: 16px; padding: 22px; width: min(720px, 95vw); max-height: 88vh; display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,.14); }
+.cat-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; overflow-y: auto; flex: 1; margin: 12px 0; }
+.cat-cell { border: 1px solid #e8e5e0; border-radius: 6px; padding: 4px 3px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 46px; gap: 2px; transition: background .12s; }
+.cat-cell:hover { background: #faf9f7; border-color: #aaa; }
+.cat-cell.has-cativo { background: #fff5f5; border-color: #e88; }
+.cat-cell.has-cativo:hover { background: #ffe8e8; }
+.cat-cell.blocked { background: #f0f0f0; border-color: #ccc; cursor: not-allowed; opacity: 0.5; }
+.cat-cell-num { font-size: 10px; font-weight: 600; color: #ccc; font-family: 'DM Mono', monospace; }
+.cat-cell.has-cativo .cat-cell-num { color: #c0392b; }
+.cat-cell-name { font-size: 7.5px; color: #c0392b; font-weight: 700; text-align: center; word-break: break-word; line-height: 1.2; max-width: 100%; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; }
+
 .wa-preview { margin-top: 14px; background: #f0faf0; border: 1px solid #c3e6c3; border-radius: 10px; padding: 10px 12px; font-size: 11.5px; line-height: 1.65; white-space: pre-wrap; color: #1a1a1a; display: none; word-break: break-word; }
 .wa-preview.visible { display: block; }
 .wa-copy-btn { display: none; margin-top: 7px; width: 100%; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; padding: 7px; border-radius: 8px; cursor: pointer; border: 1px solid #c3e6c3; background: #e8f8e8; color: #2d6a2d; transition: all .12s; }
@@ -255,6 +266,7 @@ body.print-with-names .cell.reserved .cell-name { color: #1a4fa0 !important; }
       <button class="btn" onclick="imprimirVazio()">🖨️ Imprimir vazio</button>
       <button class="btn" onclick="openMap()">🗺️ Ver mapa</button>
       <button class="btn" onclick="openHistModal()">📋 Histórico</button>
+      <button class="btn" onclick="openCatMgr()">⭐ Cativos</button>
     </div>
   </div>
 
@@ -324,6 +336,39 @@ body.print-with-names .cell.reserved .cell-name { color: #1a4fa0 !important; }
   </div>
 </div>
 
+<div class="overlay" id="cat-mgr-overlay">
+  <div class="cat-mgr-modal">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+      <div>
+        <h2 style="font-size:15px;font-weight:600;margin-bottom:2px">⭐ Gerenciar Cativos</h2>
+        <div class="modal-sub">Clique em uma mesa para editar</div>
+      </div>
+      <div class="turno-toggle">
+        <div class="turno-btn" id="cat-btn-tarde" onclick="setCatTurno('tarde')">Tarde</div>
+        <div class="turno-btn" id="cat-btn-noite" onclick="setCatTurno('noite')">Noite</div>
+      </div>
+    </div>
+    <div class="cat-grid" id="cat-mgr-grid"></div>
+    <div class="modal-btns">
+      <button onclick="closeCatMgr()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="cat-edit-overlay" style="z-index:110">
+  <div class="modal">
+    <h2 id="cat-edit-title">Mesa 01</h2>
+    <div class="modal-sub">Defina ou remova o cliente cativo</div>
+    <label>Nome do cativo</label>
+    <input type="text" id="cat-edit-name" placeholder="Ex: João Silva" onkeydown="if(event.key==='Enter') saveCativo()">
+    <div class="modal-btns">
+      <button class="mbtn-ok" onclick="saveCativo()">Salvar</button>
+      <button class="mbtn-del" id="cat-edit-del" onclick="removeCativo()" style="display:none">Remover cativo</button>
+      <button onclick="closeCatEdit()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const CAPS = {
   '01':4,'02':2,'03':2,'04':2,'05':2,'06':2,'07':2,'08':2,'09':2,'10':2,
@@ -367,12 +412,18 @@ const CATIVOS = {
 
 let state = {}, selN = null, turno = 'tarde';
 
+// Cativos dinâmicos — inicializados com os valores fixos, sobrescritos pelo Firebase
+let _cativos = {
+  tarde: Object.assign({}, CATIVOS.tarde),
+  noite: Object.assign({}, CATIVOS.noite)
+};
+
 function isSabado() {
   const d = new Date(document.getElementById('inp-data').value + 'T12:00:00');
   return d.getDay() === 6;
 }
 
-function getCativos() { return isSabado() ? (CATIVOS[turno] || {}) : {}; }
+function getCativos() { return isSabado() ? (_cativos[turno] || {}) : {}; }
 function fbKey()  { return `reservas/${document.getElementById('inp-data').value||'sem-data'}/${turno}`; }
 function metaKey(){ return `meta/${document.getElementById('inp-data').value||'sem-data'}/${turno}`; }
 
@@ -659,6 +710,100 @@ function closeHistModal() {
 
 function showToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); }
 
+// ── GERENCIADOR DE CATIVOS ──────────────────────────────────────────────────
+
+function initCativosListener() {
+  for (const t of ['tarde', 'noite']) {
+    _db.ref(`cativos/${t}`).on('value', snap => {
+      const data = snap.val();
+      // Se Firebase tem dados, usa Firebase; senão mantém os fixos do código
+      _cativos[t] = data !== null ? data : Object.assign({}, CATIVOS[t]);
+      renderGrid();
+      if (document.getElementById('cat-mgr-overlay').classList.contains('open')) {
+        renderCatGrid();
+      }
+    });
+  }
+}
+
+let catTurno = 'tarde', selCatN = null;
+
+function openCatMgr() {
+  askPassword(() => {
+    catTurno = turno;
+    document.getElementById('cat-btn-tarde').classList.toggle('active', catTurno === 'tarde');
+    document.getElementById('cat-btn-noite').classList.toggle('active', catTurno === 'noite');
+    renderCatGrid();
+    document.getElementById('cat-mgr-overlay').classList.add('open');
+  });
+}
+
+function closeCatMgr() {
+  document.getElementById('cat-mgr-overlay').classList.remove('open');
+}
+
+function setCatTurno(t) {
+  catTurno = t;
+  document.getElementById('cat-btn-tarde').classList.toggle('active', t === 'tarde');
+  document.getElementById('cat-btn-noite').classList.toggle('active', t === 'noite');
+  renderCatGrid();
+}
+
+function renderCatGrid() {
+  const grid = document.getElementById('cat-mgr-grid');
+  grid.innerHTML = '';
+  const cats = _cativos[catTurno] || {};
+  for (let i = 1; i <= 100; i++) {
+    const n = String(i).padStart(2, '0');
+    const cell = document.createElement('div');
+    if (n === '64') {
+      cell.className = 'cat-cell blocked';
+      const num = document.createElement('div');
+      num.className = 'cat-cell-num'; num.textContent = n;
+      cell.appendChild(num);
+    } else {
+      const name = cats[n] || '';
+      cell.className = name ? 'cat-cell has-cativo' : 'cat-cell';
+      cell.onclick = () => openCatEdit(n);
+      const num = document.createElement('div');
+      num.className = 'cat-cell-num'; num.textContent = n;
+      cell.appendChild(num);
+      if (name) {
+        const nm = document.createElement('div');
+        nm.className = 'cat-cell-name'; nm.textContent = name;
+        cell.appendChild(nm);
+      }
+    }
+    grid.appendChild(cell);
+  }
+}
+
+function openCatEdit(n) {
+  selCatN = n;
+  const name = (_cativos[catTurno] || {})[n] || '';
+  document.getElementById('cat-edit-title').textContent = `Mesa ${n} — ${catTurno === 'tarde' ? 'Tarde' : 'Noite'}`;
+  document.getElementById('cat-edit-name').value = name;
+  document.getElementById('cat-edit-del').style.display = name ? 'block' : 'none';
+  document.getElementById('cat-edit-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('cat-edit-name').focus(), 80);
+}
+
+function closeCatEdit() {
+  document.getElementById('cat-edit-overlay').classList.remove('open');
+}
+
+async function saveCativo() {
+  const name = document.getElementById('cat-edit-name').value.trim();
+  if (!name) return;
+  await _db.ref(`cativos/${catTurno}/${selCatN}`).set(name);
+  closeCatEdit();
+}
+
+async function removeCativo() {
+  await _db.ref(`cativos/${catTurno}/${selCatN}`).remove();
+  closeCatEdit();
+}
+
 // FUNÇÕES DE IMPRESSÃO CORRIGIDAS
 function imprimirComNomes() {
   document.body.classList.add('print-with-names');
@@ -673,6 +818,7 @@ function imprimirVazio() {
 
 document.getElementById('inp-data').value = new Date().toISOString().slice(0,10);
 onCtxChange();
+initCativosListener();
 
 const MAP_POS = {
   // Bloco Superior
