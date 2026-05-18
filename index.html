@@ -396,17 +396,18 @@ const CATIVOS = {
     '74':'Juvelino','78':'Edinett','99':'Sueli'
   },
   tarde: {
-    '01':'Domingos','02':'Lily','03':'Ana','05':'Zamora',
-    '06':'Osvaldo', '10':'Isolda','12':'Venâncio','15':'Nivaldo','18':'Aurea',
-    '19':'Ileana','20':'Fichas','25':'Carlos',
+    '01':'Domingos','02':'Lily','03':'José Antônio','05':'Zamora',
+    '06':'Osvaldo','07':'Áurea','12':'Venâncio','15':'Nivaldo',
+    '19':'Ileana','20':'Fichas','23':'Áurea','25':'Carlos',
     '27':'Ângela','28':'Maria Emília','30':'Cirley',
     '31':'Ana Maria','32':'Sônia','34':'Marcos','37':'Denise',
-    '40':'Lurdes','41':'Angelina','42':'Silvia','47':'Elaine','48':'Márcio','49':'Adele','50':'Eloy',
+    '40':'Lurdes','41':'Angelina','42':'Silvia','45':'José Luís','46':'Luiza',
+    '48':'Márcio','49':'Adele','50':'Eloy',
     '53':'Elizabeth Grego','54':'Arlete','56':'Rosa','57':'Mara',
     '58':'Madalena','59':'Marcos','60':'Yone','72':'Kátia/Murilo',
-    '73':'Roberto','74':'Clemia','75':'Salgueiro',
+    '73':'Roberto','74':'Clemia','75':'Salgueiro','77':'Mara',
     '78':'Miguel','80':'Alice','81':'França','84':'Vilma',
-    '88':'Bel','98':'Lília'
+    '88':'Bel','98':'Alice'
   }
 };
 
@@ -567,6 +568,7 @@ function copyWaMsg() {
 async function saveRes() {
   const name = document.getElementById('m-name').value.trim();
   if (!name) return;
+  // Escreve APENAS em "reservas/DATA/TURNO/MESA" — nunca toca em "cativos/"
   await _db.ref(`${fbKey()}/${selN}`).set({ name, obs: document.getElementById('m-obs').value, cap: CAPS[selN], timestamp: new Date().toISOString() });
   closeModal();
 }
@@ -712,22 +714,35 @@ function showToast(m) { const t = document.getElementById('toast'); t.textConten
 
 // ── GERENCIADOR DE CATIVOS ──────────────────────────────────────────────────
 
+// Restaura os cativos padrão do código no Firebase (ambos os turnos).
+// Pode ser chamada manualmente ou automaticamente quando Firebase está vazio.
+async function resetarCativos() {
+  console.log('[Cativos] Restaurando cativos padrão no Firebase...');
+  await Promise.all([
+    _db.ref('cativos/tarde').set(CATIVOS.tarde),
+    _db.ref('cativos/noite').set(CATIVOS.noite)
+  ]);
+  console.log('[Cativos] Cativos padrão restaurados com sucesso.');
+}
+
 function initCativosListener() {
-  // Cativos e reservas são caminhos completamente independentes no Firebase.
-  // Este listener só escuta "cativos/" e nunca toca em "reservas/".
+  // IMPORTANTE: este listener só escuta "cativos/" e NUNCA toca em "reservas/".
+  // As operações de reserva (saveRes/delRes) escrevem exclusivamente em "reservas/"
+  // e são completamente independentes dos cativos.
   for (const t of ['tarde', 'noite']) {
     _db.ref(`cativos/${t}`).on('value', snap => {
       const data = snap.val();
       if (data !== null) {
         _cativos[t] = data;
         console.log(`[Cativos] Carregado do Firebase — ${t}:`, Object.keys(data).length, 'mesas', data);
+        renderGrid();
+        if (document.getElementById('cat-mgr-overlay').classList.contains('open')) {
+          renderCatGrid();
+        }
       } else {
-        _cativos[t] = Object.assign({}, CATIVOS[t]);
-        console.log(`[Cativos] Firebase vazio — ${t}: usando ${Object.keys(_cativos[t]).length} cativos fixos do código`);
-      }
-      renderGrid();
-      if (document.getElementById('cat-mgr-overlay').classList.contains('open')) {
-        renderCatGrid();
+        // Firebase vazio: restaura os padrão (a escrita re-dispara o listener com os dados)
+        console.log(`[Cativos] Firebase vazio para ${t} — restaurando cativos padrão...`);
+        _db.ref(`cativos/${t}`).set(CATIVOS[t]);
       }
     });
   }
