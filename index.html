@@ -713,11 +713,18 @@ function showToast(m) { const t = document.getElementById('toast'); t.textConten
 // ── GERENCIADOR DE CATIVOS ──────────────────────────────────────────────────
 
 function initCativosListener() {
+  // Cativos e reservas são caminhos completamente independentes no Firebase.
+  // Este listener só escuta "cativos/" e nunca toca em "reservas/".
   for (const t of ['tarde', 'noite']) {
     _db.ref(`cativos/${t}`).on('value', snap => {
       const data = snap.val();
-      // Se Firebase tem dados, usa Firebase; senão mantém os fixos do código
-      _cativos[t] = data !== null ? data : Object.assign({}, CATIVOS[t]);
+      if (data !== null) {
+        _cativos[t] = data;
+        console.log(`[Cativos] Carregado do Firebase — ${t}:`, Object.keys(data).length, 'mesas', data);
+      } else {
+        _cativos[t] = Object.assign({}, CATIVOS[t]);
+        console.log(`[Cativos] Firebase vazio — ${t}: usando ${Object.keys(_cativos[t]).length} cativos fixos do código`);
+      }
       renderGrid();
       if (document.getElementById('cat-mgr-overlay').classList.contains('open')) {
         renderCatGrid();
@@ -729,7 +736,16 @@ function initCativosListener() {
 let catTurno = 'tarde', selCatN = null;
 
 function openCatMgr() {
-  askPassword(() => {
+  askPassword(async () => {
+    // Na primeira abertura, semeia o Firebase com todos os cativos fixos
+    // para que edições parciais não apaguem os demais.
+    for (const t of ['tarde', 'noite']) {
+      const snap = await _db.ref(`cativos/${t}`).once('value');
+      if (snap.val() === null) {
+        console.log(`[Cativos] Semeando Firebase com cativos fixos — ${t}:`, CATIVOS[t]);
+        await _db.ref(`cativos/${t}`).set(CATIVOS[t]);
+      }
+    }
     catTurno = turno;
     document.getElementById('cat-btn-tarde').classList.toggle('active', catTurno === 'tarde');
     document.getElementById('cat-btn-noite').classList.toggle('active', catTurno === 'noite');
