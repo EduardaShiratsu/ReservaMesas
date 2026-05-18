@@ -727,22 +727,25 @@ async function resetarCativos() {
 
 function initCativosListener() {
   // IMPORTANTE: este listener só escuta "cativos/" e NUNCA toca em "reservas/".
-  // As operações de reserva (saveRes/delRes) escrevem exclusivamente em "reservas/"
-  // e são completamente independentes dos cativos.
   for (const t of ['tarde', 'noite']) {
     _db.ref(`cativos/${t}`).on('value', snap => {
-      const data = snap.val();
-      if (data !== null) {
-        _cativos[t] = data;
-        console.log(`[Cativos] Carregado do Firebase — ${t}:`, Object.keys(data).length, 'mesas', data);
-        renderGrid();
-        if (document.getElementById('cat-mgr-overlay').classList.contains('open')) {
-          renderCatGrid();
+      const fbData = snap.val() || {};
+      // Sempre começa com os cativos fixos do código como base.
+      // Firebase sobrescreve/adiciona entradas (Firebase vence conflitos).
+      // Valor vazio ("") no Firebase significa "removido pelo admin".
+      const merged = Object.assign({}, CATIVOS[t]);
+      for (const [mesa, val] of Object.entries(fbData)) {
+        if (val) {
+          merged[mesa] = val;
+        } else {
+          delete merged[mesa];
         }
-      } else {
-        // Firebase vazio: restaura os padrão (a escrita re-dispara o listener com os dados)
-        console.log(`[Cativos] Firebase vazio para ${t} — restaurando cativos padrão...`);
-        _db.ref(`cativos/${t}`).set(CATIVOS[t]);
+      }
+      _cativos[t] = merged;
+      console.log(`[Cativos] ${t}: ${Object.keys(merged).length} cativos (base fixa + ${Object.keys(fbData).length} entradas do Firebase)`);
+      renderGrid();
+      if (document.getElementById('cat-mgr-overlay').classList.contains('open')) {
+        renderCatGrid();
       }
     });
   }
@@ -751,16 +754,7 @@ function initCativosListener() {
 let catTurno = 'tarde', selCatN = null;
 
 function openCatMgr() {
-  askPassword(async () => {
-    // Na primeira abertura, semeia o Firebase com todos os cativos fixos
-    // para que edições parciais não apaguem os demais.
-    for (const t of ['tarde', 'noite']) {
-      const snap = await _db.ref(`cativos/${t}`).once('value');
-      if (snap.val() === null) {
-        console.log(`[Cativos] Semeando Firebase com cativos fixos — ${t}:`, CATIVOS[t]);
-        await _db.ref(`cativos/${t}`).set(CATIVOS[t]);
-      }
-    }
+  askPassword(() => {
     catTurno = turno;
     document.getElementById('cat-btn-tarde').classList.toggle('active', catTurno === 'tarde');
     document.getElementById('cat-btn-noite').classList.toggle('active', catTurno === 'noite');
@@ -831,7 +825,9 @@ async function saveCativo() {
 }
 
 async function removeCativo() {
-  await _db.ref(`cativos/${catTurno}/${selCatN}`).remove();
+  // Armazena string vazia para sinalizar remoção explícita pelo admin.
+  // .remove() apagaria o nó completamente, impedindo distinguir "nunca definido" de "removido".
+  await _db.ref(`cativos/${catTurno}/${selCatN}`).set('');
   closeCatEdit();
 }
 
