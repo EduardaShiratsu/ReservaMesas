@@ -33,7 +33,7 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono&display=swap');
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #1a1a1a; padding: 20px; }
+body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #1a1a1a; padding: 20px; -webkit-overflow-scrolling: touch; }
 
 .screen-wrap { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 14px; border: 1px solid #e0ddd6; overflow: hidden; }
 
@@ -102,7 +102,7 @@ body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #1a1a1a; 
 
 .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.28); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
 .overlay.open { display: flex; }
-.modal { background: #fff; border: 1px solid #e0ddd6; border-radius: 16px; padding: 22px; width: 285px; box-shadow: 0 10px 40px rgba(0,0,0,.14); }
+.modal { background: #fff; border: 1px solid #e0ddd6; border-radius: 16px; padding: 22px; width: min(285px, 92vw); box-shadow: 0 10px 40px rgba(0,0,0,.14); }
 .modal h2 { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
 .modal-sub { font-size: 11px; color: #aaa; margin-bottom: 14px; }
 .modal label { display: block; font-size: 10px; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px; }
@@ -141,6 +141,79 @@ body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #1a1a1a; 
 
 .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(12px); background: #1a1a1a; color: #fff; font-size: 13px; padding: 9px 18px; border-radius: 100px; z-index: 200; opacity: 0; transition: all .22s; pointer-events: none; white-space: nowrap; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ===================== MOBILE ===================== */
+@media (max-width: 768px) {
+  body { padding: 8px; }
+  .screen-wrap { border-radius: 10px; }
+
+  /* Header compacto — empilhado verticalmente */
+  .header { flex-direction: column; align-items: stretch; gap: 12px; padding: 14px 14px 12px; }
+  .header-title h1 { font-size: 18px; }
+  .header-controls { flex-direction: column; align-items: stretch; gap: 12px; width: 100%; }
+  .fg { width: 100%; }
+  .fg input[type="date"], .fg input[type="text"] {
+    width: 100%; font-size: 16px; padding: 11px 12px; min-height: 44px;
+  }
+  .turno-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .turno-btn { text-align: center; padding: 11px; min-height: 44px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+
+  /* Toolbar / botões de ação em grid 2x2 */
+  .toolbar { flex-direction: column; align-items: stretch; gap: 10px; padding: 10px 12px; }
+  .stats { text-align: center; font-size: 12px; }
+  .sync-badge { justify-content: center; align-self: center; }
+  .toolbar-right {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%;
+  }
+  .toolbar-right .sync-badge { grid-column: 1 / -1; }
+  .toolbar-right .btn {
+    width: 100%; min-height: 44px; font-size: 13px; padding: 10px 8px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* Cards das mesas — toque adequado, fonte maior, sem corte */
+  .grid {
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: unset;
+    grid-auto-flow: row;
+    gap: 6px;
+    padding: 8px;
+  }
+  .cell {
+    min-height: 64px;
+    padding: 6px 4px;
+    gap: 4px;
+    border-radius: 9px;
+  }
+  .cell-num { font-size: 14px; }
+  .cell-name { font-size: 11px; line-height: 1.25; -webkit-line-clamp: 3; line-clamp: 3; }
+  .dot { width: 7px; height: 7px; }
+
+  /* Legenda */
+  .legend { font-size: 10.5px; gap: 8px; padding: 8px 12px; }
+  .leg-right { width: 100%; margin-left: 0; justify-content: space-around; margin-top: 4px; }
+
+  /* Modal de gerenciamento de cativos */
+  .cat-mgr-modal { padding: 14px; width: 96vw; max-height: 92vh; }
+  .cat-grid {
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: unset;
+    grid-auto-flow: row;
+    gap: 6px;
+  }
+  .cat-cell { min-height: 52px; }
+  .cat-cell-name { font-size: 9px; }
+
+  /* Mapa */
+  .map-wrap { padding: 14px; width: 96vw; height: 92vh; }
+  .map-header h2 { font-size: 18px; }
+  .map-close { padding: 8px 16px; font-size: 14px; }
+}
+
+@media (max-width: 420px) {
+  .grid { grid-template-columns: repeat(4, 1fr); }
+  .header-title h1 { font-size: 16px; }
+}
 
 @media print {
   @page { size: A4 landscape; margin: 5mm; }
