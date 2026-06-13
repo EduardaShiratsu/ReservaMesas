@@ -172,15 +172,19 @@ body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #1a1a1a; 
   }
 
   /* Cards das mesas — toque adequado, fonte maior, sem corte */
+  /* Mantém a mesma ordem das mesas do desktop (coluna = dezena), com scroll horizontal */
   .grid {
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: unset;
-    grid-auto-flow: row;
+    grid-template-columns: repeat(10, minmax(62px, 1fr));
+    grid-template-rows: repeat(10, minmax(62px, auto));
+    grid-auto-flow: column;
     gap: 6px;
     padding: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .cell {
-    min-height: 64px;
+    min-width: 62px;
+    min-height: 62px;
     padding: 6px 4px;
     gap: 4px;
     border-radius: 9px;
@@ -193,15 +197,17 @@ body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #1a1a1a; 
   .legend { font-size: 10.5px; gap: 8px; padding: 8px 12px; }
   .leg-right { width: 100%; margin-left: 0; justify-content: space-around; margin-top: 4px; }
 
-  /* Modal de gerenciamento de cativos */
+  /* Modal de gerenciamento de cativos — mesma ordem, com scroll horizontal */
   .cat-mgr-modal { padding: 14px; width: 96vw; max-height: 92vh; }
   .cat-grid {
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: unset;
-    grid-auto-flow: row;
-    gap: 6px;
+    grid-template-columns: repeat(10, minmax(48px, 1fr));
+    grid-template-rows: repeat(10, minmax(48px, auto));
+    grid-auto-flow: column;
+    gap: 5px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
-  .cat-cell { min-height: 52px; }
+  .cat-cell { min-width: 48px; min-height: 48px; }
   .cat-cell-name { font-size: 9px; }
 
   /* Mapa */
@@ -211,7 +217,6 @@ body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #1a1a1a; 
 }
 
 @media (max-width: 420px) {
-  .grid { grid-template-columns: repeat(4, 1fr); }
   .header-title h1 { font-size: 16px; }
 }
 
